@@ -2,14 +2,17 @@ package main
 
 import (
 	"bufio"
-	"fmt"
 	"log"
 	"os"
 )
 
 func main() {
-	var data = loadData("./samples/uniform_samples_limited.txt")
-	fmt.Println(data)
+	data := loadData("./samples/uniform_samples_limited.txt")
+
+	l := List{}
+	l.BuildList(data)
+
+	l.Show()
 }
 
 func loadData(path string) []string {
