@@ -2,17 +2,38 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"log"
 	"os"
+	"time"
 )
 
 func main() {
-	data := loadData("./samples/uniform_samples_limited.txt")
+	data100 := loadData("./samples/uniform_samples_limited_100.txt")
 
-	l := List{}
-	l.BuildList(data)
+	evaluteOperations(data100, 1000)
+}
 
-	l.Show()
+func evaluteOperations(data []string, iter int) {
+	var trials []int64
+
+	for i := 0; i < iter; i++ {
+		l := List{}
+		start := time.Now()
+		l.BuildList(data)
+		t := time.Now()
+		fmt.Println(t.Sub(start).Nanoseconds())
+		trials = append(trials, t.Sub(start).Nanoseconds())
+	}
+
+	var sum int64
+	for _, trial := range trials {
+		sum = int64(sum) + int64(trial)
+	}
+
+	avg := sum / int64(iter)
+
+	fmt.Printf("Average time over %d samples: %v\n", iter, avg)
 }
 
 func loadData(path string) []string {

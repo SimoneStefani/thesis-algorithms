@@ -54,6 +54,10 @@ func (l *List) BuildList(data []string) {
 	}
 }
 
+func (l *List) GetTail() string {
+	return l.tail.tr
+}
+
 func hashTransaction(tr string) string {
 	h := sha256.Sum256([]byte(tr))
 	return base64.StdEncoding.EncodeToString(h[:])
