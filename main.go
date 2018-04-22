@@ -5,13 +5,16 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"time"
 )
 
 func main() {
-	data100 := loadData("./samples/uniform_samples_limited_100.txt")
-
-	evaluteOperations(data100, 1000)
+	for i := 100; i < 3000; i += 50 {
+		path := "./samples/uniform_samples_" + strconv.Itoa(i) + ".txt"
+		data := loadData(path)
+		evaluteOperations(data, 10)
+	}
 }
 
 func evaluteOperations(data []string, iter int) {
@@ -22,7 +25,7 @@ func evaluteOperations(data []string, iter int) {
 		start := time.Now()
 		l.BuildList(data)
 		t := time.Now()
-		fmt.Println(t.Sub(start).Nanoseconds())
+		// fmt.Println(t.Sub(start).Nanoseconds())
 		trials = append(trials, t.Sub(start).Nanoseconds())
 	}
 
@@ -33,7 +36,7 @@ func evaluteOperations(data []string, iter int) {
 
 	avg := sum / int64(iter)
 
-	fmt.Printf("Average time over %d samples: %v\n", iter, avg)
+	fmt.Printf("%d transactions - Average time over %d samples: %v\n", len(data), iter, avg)
 }
 
 func loadData(path string) []string {
