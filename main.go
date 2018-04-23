@@ -15,7 +15,7 @@ func main() {
 	for i := 100; i < 1000; i += 50 {
 		path := "./samples/uniform/uniform_samples_" + strconv.Itoa(i) + ".txt"
 		data := loadData(path)
-		results = results + strconv.FormatInt(evaluteOperations(data, 10), 10) + ", "
+		results = results + strconv.FormatInt(evaluteOperations(data, 10), 10) + ","
 	}
 
 	fmt.Println(results)
@@ -74,20 +74,26 @@ func writeData(data string) {
 	path := "./out/results.txt"
 
 	// detect if file exists
-	var _, err = os.Stat(path)
+	var _, e = os.Stat(path)
 
-	// create file if not exists
-	if os.IsNotExist(err) {
-		var file, err = os.Create(path)
-		if err != nil {
-			log.Fatal(err)
+	// remove file if it exists
+	if os.IsExist(e) {
+		var e = os.Remove(path)
+		if e != nil {
+			log.Fatal(e)
 		}
-		defer file.Close()
 	}
 
-	var file, e = os.OpenFile(path, os.O_RDWR, 0644)
-	if e != nil {
-		log.Fatal(e)
+	// create file
+	var file, err = os.Create(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	file, err = os.OpenFile(path, os.O_RDWR, 0644)
+	if err != nil {
+		log.Fatal(err)
 	}
 	defer file.Close()
 
