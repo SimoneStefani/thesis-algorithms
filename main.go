@@ -12,7 +12,7 @@ import (
 func main() {
 	results := ""
 
-	for i := 100; i < 1000; i += 50 {
+	for i := 100; i < 3000; i += 50 {
 		path := "./samples/uniform/uniform_samples_" + strconv.Itoa(i) + ".txt"
 		data := loadData(path)
 		results = results + strconv.FormatInt(evaluteOperations(data, 10), 10) + ","
@@ -26,9 +26,10 @@ func evaluteOperations(data []string, iter int) int64 {
 	var trials []int64
 
 	for i := 0; i < iter; i++ {
-		l := List{}
+		// l := List{}
 		start := time.Now()
-		l.BuildList(data)
+		NewTree(data)
+		// l.BuildList(data)
 		t := time.Now()
 		// fmt.Println(t.Sub(start).Nanoseconds())
 		trials = append(trials, t.Sub(start).Nanoseconds())
@@ -71,7 +72,7 @@ func loadData(path string) []string {
 }
 
 func writeData(data string) {
-	path := "./out/results.txt"
+	path := "./out/results_mt2.txt"
 
 	// detect if file exists
 	var _, e = os.Stat(path)
