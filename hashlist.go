@@ -6,19 +6,19 @@ import (
 	"fmt"
 )
 
-type Node struct {
-	prev *Node
-	next *Node
+type LNode struct {
+	prev *LNode
+	next *LNode
 	tr   string
 }
 
 type List struct {
-	head *Node
-	tail *Node
+	head *LNode
+	tail *LNode
 }
 
 func (L *List) Insert(tr string) {
-	list := &Node{
+	list := &LNode{
 		next: L.head,
 		tr:   tr,
 	}
