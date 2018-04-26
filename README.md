@@ -1,4 +1,7 @@
+#### Royal Institute of Technology KTH - Stockholm
 # Blockchain Algorithms
+
+_This repository contains code written during the spring semester 2018 by Dean Rauschenbusch and Simone Stefani_
 
 ## Run the experiment
 
