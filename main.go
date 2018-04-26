@@ -40,7 +40,11 @@ func main() {
 	for i := 100; i < 3000; i += 50 {
 		path := env.PathSamples + strconv.Itoa(i) + ".txt"
 		data := loadData(path)
-		results = results + strconv.FormatInt(evaluteOperations(data, 10), 10) + ","
+		if i+50 >= 3000 {
+			results = results + strconv.FormatInt(evaluteOperations(data, 10), 10)
+		} else {
+			results = results + strconv.FormatInt(evaluteOperations(data, 10), 10) + ","
+		}
 	}
 
 	fmt.Println(results)
