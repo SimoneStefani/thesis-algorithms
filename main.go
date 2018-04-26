@@ -44,7 +44,7 @@ func main() {
 	}
 
 	fmt.Println(results)
-	writeData(results)
+	writeData(env.PathResults+"results_mt2.txt", results)
 }
 
 func evaluteOperations(data []string, iter int) int64 {
@@ -96,8 +96,7 @@ func loadData(path string) []string {
 	return data
 }
 
-func writeData(data string) {
-	path := "./out/results_mt2.txt"
+func writeData(path string, data string) {
 
 	// detect if file exists
 	var _, e = os.Stat(path)
