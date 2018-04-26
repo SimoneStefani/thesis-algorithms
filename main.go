@@ -2,18 +2,43 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
 	"time"
 )
 
+type env struct {
+	PathSamples string
+	PathResults string
+}
+
 func main() {
+
+	//Load environment
+	envPath := "./env.json"
+	file, err1 := ioutil.ReadFile(envPath)
+	if err1 != nil {
+		fmt.Printf("error while reading file &s\n", envPath)
+		fmt.Printf("File error: %v\n", err1)
+		os.Exit(1)
+	}
+
+	var env env
+
+	err2 := json.Unmarshal(file, &env)
+	if err2 != nil {
+		fmt.Println("error:", err2)
+		os.Exit(1)
+	}
+
 	results := ""
 
 	for i := 100; i < 3000; i += 50 {
-		path := "./samples/uniform/uniform_samples_" + strconv.Itoa(i) + ".txt"
+		path := env.PathSamples + strconv.Itoa(i) + ".txt"
 		data := loadData(path)
 		results = results + strconv.FormatInt(evaluteOperations(data, 10), 10) + ","
 	}
