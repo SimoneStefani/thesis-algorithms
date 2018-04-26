@@ -2,51 +2,53 @@ package main
 
 import (
 	"bufio"
-	"encoding/json"
+	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
 	"time"
 )
 
-type env struct {
-	PathSamples string
-	PathResults string
-}
-
 func main() {
 
-	//Load environment
-	env := loadEnv()
+	// parse the command line arguments
+	algo, op, fileName := parseCommand()
+	fmt.Printf("Running experiment with algo=%s and op=%s from %s...\n\n", *algo, *op, *fileName)
 
-	results := ""
+	// load data from specific file
+	path := "./source/" + *fileName
+	data := loadData(path)
 
-	for i := 100; i < 3000; i += 50 {
-		path := env.PathSamples + strconv.Itoa(i) + ".txt"
-		data := loadData(path)
-		if i+50 >= 3000 {
-			results = results + strconv.FormatInt(evaluteOperations(data, 10), 10)
-		} else {
-			results = results + strconv.FormatInt(evaluteOperations(data, 10), 10) + ","
-		}
-	}
+	// run experiment
+	results := evaluteOperations(data, algo, 10)
 
-	fmt.Println(results)
-	writeData(env.PathResults+"results_mt2.txt", results)
+	// write to file the stringified result.
+	// output file name pattern: result_[algo]_[inputName]
+	// e.g. result_mt_uniform_samples_100.txt
+	parsedResult := strconv.FormatInt(results, 10)
+	resultName := "result_" + *algo + "_" + *fileName
+	writeData("./results/"+resultName, parsedResult)
 }
 
-func evaluteOperations(data []string, iter int) int64 {
+func evaluteOperations(data []string, algo *string, iter int) int64 {
 	var trials []int64
 
 	for i := 0; i < iter; i++ {
-		// l := List{}
-		start := time.Now()
-		NewTree(data)
-		// l.BuildList(data)
-		t := time.Now()
-		// fmt.Println(t.Sub(start).Nanoseconds())
+		var start time.Time
+		var t time.Time
+
+		if *algo == "mt" {
+			start = time.Now()
+			NewTree(data)
+			t = time.Now()
+		} else if *algo == "hl" {
+			l := List{}
+			start = time.Now()
+			l.BuildList(data)
+			t = time.Now()
+		}
+
 		trials = append(trials, t.Sub(start).Nanoseconds())
 	}
 
@@ -62,23 +64,26 @@ func evaluteOperations(data []string, iter int) int64 {
 	return avg
 }
 
-func loadEnv() env {
-	envPath := "./env.json"
-	file, err1 := ioutil.ReadFile(envPath)
-	if err1 != nil {
-		fmt.Printf("error while reading file &s\n", envPath)
-		fmt.Printf("File error: %v\n", err1)
-		os.Exit(1)
-	}
+func parseCommand() (*string, *string, *string) {
 
-	var env env
+	// Parse algorithm:
+	// hl -> hashlist
+	// mt -> Merkle tree (default)
+	// fmt -> fast Merkle tree
+	// bf -> Bloom's filter
+	algorithm := flag.String("algo", "mt", "the algorithm to use")
 
-	err2 := json.Unmarshal(file, &env)
-	if err2 != nil {
-		fmt.Println("error:", err2)
-		os.Exit(1)
-	}
-	return env
+	// Parse operation:
+	// build -> build the data structure (default)
+	// verify -> verification of block
+	operation := flag.String("op", "build", "the operation to perform")
+
+	// Parse output file name
+	fileName := flag.String("name", "pew", "the name of the input file")
+
+	flag.Parse()
+
+	return algorithm, operation, fileName
 }
 
 func loadData(path string) []string {
