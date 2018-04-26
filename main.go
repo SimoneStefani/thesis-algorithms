@@ -19,21 +19,7 @@ type env struct {
 func main() {
 
 	//Load environment
-	envPath := "./env.json"
-	file, err1 := ioutil.ReadFile(envPath)
-	if err1 != nil {
-		fmt.Printf("error while reading file &s\n", envPath)
-		fmt.Printf("File error: %v\n", err1)
-		os.Exit(1)
-	}
-
-	var env env
-
-	err2 := json.Unmarshal(file, &env)
-	if err2 != nil {
-		fmt.Println("error:", err2)
-		os.Exit(1)
-	}
+	env := loadEnv()
 
 	results := ""
 
@@ -74,6 +60,25 @@ func evaluteOperations(data []string, iter int) int64 {
 	fmt.Printf("%d transactions - Average time over %d samples: %v\n", len(data), iter, avg)
 
 	return avg
+}
+
+func loadEnv() env {
+	envPath := "./env.json"
+	file, err1 := ioutil.ReadFile(envPath)
+	if err1 != nil {
+		fmt.Printf("error while reading file &s\n", envPath)
+		fmt.Printf("File error: %v\n", err1)
+		os.Exit(1)
+	}
+
+	var env env
+
+	err2 := json.Unmarshal(file, &env)
+	if err2 != nil {
+		fmt.Println("error:", err2)
+		os.Exit(1)
+	}
+	return env
 }
 
 func loadData(path string) []string {
