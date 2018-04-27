@@ -26,12 +26,24 @@ func main() {
 	// write to file the stringified result.
 	// output file name pattern: result_[algo]_[inputName]
 	// e.g. result_mt_uniform_samples_100.txt
-	parsedResult := strconv.FormatInt(results, 10)
+	parsedResult := parseIntArrayToList(results)
 	resultName := "result_" + *algo + "_" + *fileName
 	writeData("./results/"+resultName, parsedResult)
 }
 
-func evaluteOperations(data []string, algo *string, iter int) int64 {
+func parseIntArrayToList(data []int64) string {
+	results := ""
+	for i := 0; i < len(data); i++ {
+		if i+1 == len(data) {
+			results = results + strconv.FormatInt(data[i], 10)
+		} else {
+			results = results + strconv.FormatInt(data[i], 10) + "\n"
+		}
+	}
+	return results
+}
+
+func evaluteOperations(data []string, algo *string, iter int) []int64 {
 	var trials []int64
 
 	for i := 0; i < iter; i++ {
@@ -52,16 +64,9 @@ func evaluteOperations(data []string, algo *string, iter int) int64 {
 		trials = append(trials, t.Sub(start).Nanoseconds())
 	}
 
-	var sum int64
-	for _, trial := range trials {
-		sum = int64(sum) + int64(trial)
-	}
+	//fmt.Printf("%d transactions - Average time over %d samples: %v\n", len(data), iter, avg)
 
-	avg := sum / int64(iter)
-
-	fmt.Printf("%d transactions - Average time over %d samples: %v\n", len(data), iter, avg)
-
-	return avg
+	return trials
 }
 
 func parseCommand() (*string, *string, *string) {
