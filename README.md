@@ -15,10 +15,23 @@ cd thesis-algorithms
 go build -o thesis *.go
 ```
 
-Then run the experiment. The program expects as arguments the algorithm to use, the operation to perform and the name of the data source file. For example:
+Then run the experiment. The program expects the following arguments:
+* `-algo` the algorithm to run
+    + `hl` = Hash List
+    + `mt` = Merkle Tree
+    + (`fmt` = Fast Merkle Tree)
+    + (`bf` = Bloom Filter)
+
+* `-op` = the operation to perform
+    + `build` = building the data structure
+    + (`verify` = verifying a transaction)
+* `-name` =  the name of to the data source file
+    + example: uniform_samples_100.txt
+
+Full example:
 
 ```bash
-./thesis -algo=mt -op=build -name=uniform_samples_100.txt
+./thesis -gopath=./ -algo=mt -op=build -name=uniform_samples_100.txt
 ```
 
 The output is written in a file in the `results` folder (don't remove the `.gitkeep` file). The name of the output file has the following pattern:
@@ -27,4 +40,18 @@ The output is written in a file in the `results` folder (don't remove the `.gitk
 result_[algo]_[inputName]
 
 e.g. result_mt_uniform_samples_100.txt
+
+
+Sample Content:
+
+1603576\n
+1518621\n
+1661780\n
+1942438\n
+1404330\n
+1488375\n
+1470545\n
+1458146\n
+1549256\n
+1727792
 ```
