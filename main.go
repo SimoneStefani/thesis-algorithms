@@ -13,7 +13,7 @@ import (
 func main() {
 
 	// parse the command line arguments
-	algo, op, fileName := parseCommand()
+	algo, op, fileName, iter := parseCommand()
 	fmt.Printf("Running experiment with algo=%s and op=%s from %s...\n\n", *algo, *op, *fileName)
 
 	// load data from specific file
@@ -21,7 +21,7 @@ func main() {
 	data := loadData(path)
 
 	// run experiment
-	results := evaluteOperations(data, algo, 10)
+	results := evaluteOperations(data, algo, *iter)
 
 	// write to file the stringified result.
 	// output file name pattern: result_[algo]_[inputName]
@@ -69,7 +69,7 @@ func evaluteOperations(data []string, algo *string, iter int) []int64 {
 	return trials
 }
 
-func parseCommand() (*string, *string, *string) {
+func parseCommand() (*string, *string, *string, *int) {
 
 	// Parse algorithm:
 	// hl -> hashlist
@@ -86,9 +86,12 @@ func parseCommand() (*string, *string, *string) {
 	// Parse output file name
 	fileName := flag.String("name", "pew", "the name of the input file")
 
+	// Parse output file name
+	iterations := flag.Int("iter", 10, "number of iterations")
+
 	flag.Parse()
 
-	return algorithm, operation, fileName
+	return algorithm, operation, fileName, iterations
 }
 
 func loadData(path string) []string {

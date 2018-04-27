@@ -17,21 +17,24 @@ go build -o thesis *.go
 
 Then run the experiment. The program expects the following arguments:
 * `-algo` the algorithm to run
-    + `hl` = Hash List
-    + `mt` = Merkle Tree
-    + (`fmt` = Fast Merkle Tree)
-    + (`bf` = Bloom Filter)
+  * `hl` = Hash List
+  * `mt` = Merkle Tree
+  * (`fmt` = Fast Merkle Tree)
+  * (`bf` = Bloom Filter)
 
 * `-op` = the operation to perform
-    + `build` = building the data structure
-    + (`verify` = verifying a transaction)
+  * `build` = building the data structure
+  * (`verify` = verifying a transaction)
+
 * `-name` =  the name of to the data source file
-    + example: uniform_samples_100.txt
+  * example: uniform_samples_100.txt
+
+* `-iter` =  number of iterations
 
 Full example:
 
 ```bash
-./thesis -gopath=./ -algo=mt -op=build -name=uniform_samples_100.txt
+./thesis -gopath=./ -algo=mt -op=build -name=uniform_samples_100.txt -iter=10
 ```
 
 The output is written in a file in the `results` folder (don't remove the `.gitkeep` file). The name of the output file has the following pattern:
