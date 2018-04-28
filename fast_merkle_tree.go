@@ -77,7 +77,7 @@ func buildIntermediateF(nl []*FMTNode) *FMTNode {
 		n := &FMTNode{
 			Left:  nl[left],
 			Right: nl[right],
-			Hash:  hashTransaction(hashTransaction(nl[left].Hash + nl[right].Hash)),
+			Hash:  hashTransaction(nl[left].Hash + nl[right].Hash),
 		}
 		nodes = append(nodes, n)
 
