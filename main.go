@@ -13,7 +13,7 @@ import (
 func main() {
 
 	// parse the command line arguments
-	algo, op, fileName := parseCommand()
+	algo, op, fileName, iter := parseCommand()
 	fmt.Printf("Running experiment with algo=%s and op=%s from %s...\n\n", *algo, *op, *fileName)
 
 	// load data from specific file
@@ -21,17 +21,29 @@ func main() {
 	data := loadData(path)
 
 	// run experiment
-	results := evaluteOperations(data, algo, 10)
+	results := evaluteOperations(data, algo, *iter)
 
 	// write to file the stringified result.
 	// output file name pattern: result_[algo]_[inputName]
 	// e.g. result_mt_uniform_samples_100.txt
-	parsedResult := strconv.FormatInt(results, 10)
+	parsedResult := parseIntArrayToList(results)
 	resultName := "result_" + *algo + "_" + *fileName
 	writeData("./results/"+resultName, parsedResult)
 }
 
-func evaluteOperations(data []string, algo *string, iter int) int64 {
+func parseIntArrayToList(data []int64) string {
+	results := ""
+	for i := 0; i < len(data); i++ {
+		if i+1 == len(data) {
+			results = results + strconv.FormatInt(data[i], 10)
+		} else {
+			results = results + strconv.FormatInt(data[i], 10) + "\n"
+		}
+	}
+	return results
+}
+
+func evaluteOperations(data []string, algo *string, iter int) []int64 {
 	var trials []int64
 
 	for i := 0; i < iter; i++ {
@@ -52,19 +64,12 @@ func evaluteOperations(data []string, algo *string, iter int) int64 {
 		trials = append(trials, t.Sub(start).Nanoseconds())
 	}
 
-	var sum int64
-	for _, trial := range trials {
-		sum = int64(sum) + int64(trial)
-	}
+	//fmt.Printf("%d transactions - Average time over %d samples: %v\n", len(data), iter, avg)
 
-	avg := sum / int64(iter)
-
-	fmt.Printf("%d transactions - Average time over %d samples: %v\n", len(data), iter, avg)
-
-	return avg
+	return trials
 }
 
-func parseCommand() (*string, *string, *string) {
+func parseCommand() (*string, *string, *string, *int) {
 
 	// Parse algorithm:
 	// hl -> hashlist
@@ -81,9 +86,12 @@ func parseCommand() (*string, *string, *string) {
 	// Parse output file name
 	fileName := flag.String("name", "pew", "the name of the input file")
 
+	// Parse output file name
+	iterations := flag.Int("iter", 10, "number of iterations")
+
 	flag.Parse()
 
-	return algorithm, operation, fileName
+	return algorithm, operation, fileName, iterations
 }
 
 func loadData(path string) []string {
