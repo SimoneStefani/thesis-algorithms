@@ -6,19 +6,23 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 )
 
 func main() {
 
+	// get absolute path of current folder
+	basePath := getPath()
+
 	// parse the command line arguments
 	algo, op, fileName, iter := parseCommand()
 	fmt.Printf("Running experiment with algo=%s and op=%s from %s...\n\n", *algo, *op, *fileName)
 
 	// load data from specific file
-	path := "./source/" + *fileName
-	data := loadData(path)
+	sourcePath := basePath + "/source/" + *fileName
+	data := loadData(sourcePath)
 
 	// run experiment
 	results := evaluteOperations(data, algo, *iter)
@@ -28,7 +32,8 @@ func main() {
 	// e.g. result_mt_uniform_samples_100.txt
 	parsedResult := parseIntArrayToList(results)
 	resultName := "result_" + *algo + "_" + *fileName
-	writeData("./results/"+resultName, parsedResult)
+	destPath := basePath + "/results/" + resultName
+	writeData(destPath, parsedResult)
 }
 
 func parseIntArrayToList(data []int64) string {
@@ -155,4 +160,14 @@ func writeData(path string, data string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func getPath() string {
+	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return dir
 }
