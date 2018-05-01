@@ -1,32 +1,32 @@
-package main
+package mt
 
 import (
 	"errors"
+
+	. "github.com/SimoneStefani/thesis-algorithms/structures/common"
 )
 
 type MerkleTree struct {
 	Root       *Node
 	merkleRoot string
-	Leafs      []*Node
+	Leaves     []*Node
 }
 
 type Node struct {
 	Parent *Node
 	Left   *Node
 	Right  *Node
-	leaf   bool
-	dup    bool
-	Hash   string
+	hash   string
 	data   string
 }
 
 type VerificationNode struct {
-	Hash   string
+	hash   string
 	isLeft bool
 }
 
 func NewTree(data []string) (*MerkleTree, error) {
-	root, leafs, err := buildWithContent(data)
+	root, leaves, err := buildWithContent(data)
 
 	if err != nil {
 		return nil, err
@@ -34,8 +34,8 @@ func NewTree(data []string) (*MerkleTree, error) {
 
 	t := &MerkleTree{
 		Root:       root,
-		merkleRoot: root.Hash,
-		Leafs:      leafs,
+		merkleRoot: root.hash,
+		Leaves:     leaves,
 	}
 
 	return t, nil
@@ -43,7 +43,7 @@ func NewTree(data []string) (*MerkleTree, error) {
 
 func VerifyTransaction(tr string, list []string) (bool, error) {
 
-	pos, err := inList(tr, list)
+	pos, err := Includes(tr, list)
 
 	if err != nil {
 		return false, err
@@ -55,34 +55,24 @@ func VerifyTransaction(tr string, list []string) (bool, error) {
 	return checkPath(tr, tree.merkleRoot, path), err
 }
 
-func inList(tr string, list []string) (int, error) {
+func checkPath(tr string, roothash string, path []VerificationNode) bool {
 
-	for i, transaction := range list {
-		if tr == transaction {
-			return i, nil
-		}
-	}
-	return -1, errors.New("error: not in list")
-}
-
-func checkPath(tr string, rootHash string, path []VerificationNode) bool {
-
-	hash := hashTransaction(hashTransaction(tr))
+	hash := HashTransaction(HashTransaction(tr))
 
 	for _, node := range path {
 		if node.isLeft {
-			hash = hashTransaction(hashTransaction(node.Hash + hash))
+			hash = HashTransaction(HashTransaction(node.hash + hash))
 		} else {
-			hash = hashTransaction(hashTransaction(hash + node.Hash))
+			hash = HashTransaction(HashTransaction(hash + node.hash))
 		}
 	}
 
-	return hash == rootHash
+	return hash == roothash
 }
 
 func computeMerklePath(pos int, tree *MerkleTree) []VerificationNode {
 
-	node := tree.Leafs[pos]
+	node := tree.Leaves[pos]
 
 	var path []VerificationNode
 	var temp VerificationNode
@@ -93,12 +83,12 @@ func computeMerklePath(pos int, tree *MerkleTree) []VerificationNode {
 		}
 		if isLeftChild(node) {
 			temp = VerificationNode{
-				Hash:   node.Parent.Right.Hash,
+				hash:   node.Parent.Right.hash,
 				isLeft: false,
 			}
 		} else {
 			temp = VerificationNode{
-				Hash:   node.Parent.Left.Hash,
+				hash:   node.Parent.Left.hash,
 				isLeft: true,
 			}
 		}
@@ -110,7 +100,7 @@ func computeMerklePath(pos int, tree *MerkleTree) []VerificationNode {
 }
 
 func isLeftChild(node *Node) bool {
-	return node.Parent.Left.Hash == node.Hash
+	return node.Parent.Left.hash == node.hash
 }
 
 func buildWithContent(data []string) (*Node, []*Node, error) {
@@ -118,27 +108,24 @@ func buildWithContent(data []string) (*Node, []*Node, error) {
 		return nil, nil, errors.New("Error: cannot construct tree with no content.")
 	}
 
-	var leafs []*Node
+	var leaves []*Node
 	for _, tr := range data {
-		leafs = append(leafs, &Node{
-			Hash: hashTransaction(hashTransaction(tr)),
+		leaves = append(leaves, &Node{
+			hash: HashTransaction(HashTransaction(tr)),
 			data: tr,
-			leaf: true,
 		})
 	}
 
-	if len(leafs)%2 == 1 {
+	if len(leaves)%2 == 1 {
 		duplicate := &Node{
-			Hash: leafs[len(leafs)-1].Hash,
-			data: leafs[len(leafs)-1].data,
-			leaf: true,
-			dup:  true,
+			hash: leaves[len(leaves)-1].hash,
+			data: leaves[len(leaves)-1].data,
 		}
-		leafs = append(leafs, duplicate)
+		leaves = append(leaves, duplicate)
 	}
 
-	root := buildIntermediate(leafs)
-	return root, leafs, nil
+	root := buildIntermediate(leaves)
+	return root, leaves, nil
 }
 
 func buildIntermediate(nl []*Node) *Node {
@@ -154,7 +141,7 @@ func buildIntermediate(nl []*Node) *Node {
 		n := &Node{
 			Left:  nl[left],
 			Right: nl[right],
-			Hash:  hashTransaction(hashTransaction(nl[left].Hash + nl[right].Hash)),
+			hash:  HashTransaction(HashTransaction(nl[left].hash + nl[right].hash)),
 		}
 		nodes = append(nodes, n)
 
