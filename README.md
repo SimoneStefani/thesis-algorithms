@@ -43,18 +43,11 @@ The output is written in a file in the `results` folder (don't remove the `.gitk
 result_[algo]_[inputName]
 
 e.g. result_mt_uniform_samples_100.txt
-
-
-Sample Content:
-
-1603576\n
-1518621\n
-1661780\n
-1942438\n
-1404330\n
-1488375\n
-1470545\n
-1458146\n
-1549256\n
-1727792
 ```
+
+The content of the output files is layed out in the following form (where `,` is the separator) constituting a list of trials results:
+
+```
+[build_time], [build_memory], [avg_verification_time], [avg_verification_memory]\n
+```
+
