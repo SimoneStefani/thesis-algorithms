@@ -20,6 +20,11 @@ type Node struct {
 	data   string
 }
 
+type VerificationNode struct {
+	Hash   string
+	isLeft bool
+}
+
 func NewTree(data []string) (*MerkleTree, error) {
 	root, leafs, err := buildWithContent(data)
 
@@ -34,6 +39,78 @@ func NewTree(data []string) (*MerkleTree, error) {
 	}
 
 	return t, nil
+}
+
+func VerifyTransaction(tr string, list []string) (bool, error) {
+
+	pos, err := inList(tr, list)
+
+	if err != nil {
+		return false, err
+	}
+
+	tree, err := NewTree(list)
+	path := computeMerklePath(pos, tree)
+
+	return checkPath(tr, tree.merkleRoot, path), err
+}
+
+func inList(tr string, list []string) (int, error) {
+
+	for i, transaction := range list {
+		if tr == transaction {
+			return i, nil
+		}
+	}
+	return -1, errors.New("error: not in list")
+}
+
+func checkPath(tr string, rootHash string, path []VerificationNode) bool {
+
+	hash := hashTransaction(hashTransaction(tr))
+
+	for _, node := range path {
+		if node.isLeft {
+			hash = hashTransaction(hashTransaction(node.Hash + hash))
+		} else {
+			hash = hashTransaction(hashTransaction(hash + node.Hash))
+		}
+	}
+
+	return hash == rootHash
+}
+
+func computeMerklePath(pos int, tree *MerkleTree) []VerificationNode {
+
+	node := tree.Leafs[pos]
+
+	var path []VerificationNode
+	var temp VerificationNode
+
+	for {
+		if node.Parent == nil {
+			break
+		}
+		if isLeftChild(node) {
+			temp = VerificationNode{
+				Hash:   node.Parent.Right.Hash,
+				isLeft: false,
+			}
+		} else {
+			temp = VerificationNode{
+				Hash:   node.Parent.Left.Hash,
+				isLeft: true,
+			}
+		}
+		path = append(path, temp)
+		node = node.Parent
+	}
+
+	return path
+}
+
+func isLeftChild(node *Node) bool {
+	return node.Parent.Left.Hash == node.Hash
 }
 
 func buildWithContent(data []string) (*Node, []*Node, error) {
