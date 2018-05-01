@@ -3,7 +3,7 @@ package fastmt
 import (
 	"errors"
 
-	. "github.com/SimoneStefani/thesis-algorithms/structures/common"
+	. "github.com/Daynex/thesis-algorithms/structures/common"
 )
 
 type FastMerkleTree struct {
@@ -20,6 +20,11 @@ type Node struct {
 	data   string
 }
 
+type VerificationNode struct {
+	hash   string
+	isLeft bool
+}
+
 func NewFastMerkleTree(data []string) (*FastMerkleTree, error) {
 	root, leaves, err := buildWithContent(data)
 
@@ -34,6 +39,68 @@ func NewFastMerkleTree(data []string) (*FastMerkleTree, error) {
 	}
 
 	return t, nil
+}
+
+func VerifyTransaction(tr string, list []string) (bool, error) {
+
+	pos, err := Includes(tr, list)
+
+	if err != nil {
+		return false, err
+	}
+
+	tree, err := NewFastMerkleTree(list)
+	path := computeMerklePath(pos, tree)
+
+	return checkPath(tr, tree.merkleRoot, path), err
+}
+
+func checkPath(tr string, roothash string, path []VerificationNode) bool {
+
+	hash := HashTransaction(HashTransaction(tr))
+
+	for _, node := range path {
+		if node.isLeft {
+			hash = HashTransaction(node.hash + hash)
+		} else {
+			hash = HashTransaction(hash + node.hash)
+		}
+	}
+
+	return hash == roothash
+}
+
+func computeMerklePath(pos int, tree *FastMerkleTree) []VerificationNode {
+
+	node := tree.Leaves[pos]
+
+	var path []VerificationNode
+	var temp VerificationNode
+
+	for {
+		if node.Parent == nil {
+			break
+		}
+		if isLeftChild(node) {
+			temp = VerificationNode{
+				hash:   node.Parent.Right.hash,
+				isLeft: false,
+			}
+		} else {
+			temp = VerificationNode{
+				hash:   node.Parent.Left.hash,
+				isLeft: true,
+			}
+		}
+		path = append(path, temp)
+		node = node.Parent
+	}
+
+	return path
+}
+
+func isLeftChild(node *Node) bool {
+	return node.Parent.Left.hash == node.hash
 }
 
 func buildWithContent(data []string) (*Node, []*Node, error) {
