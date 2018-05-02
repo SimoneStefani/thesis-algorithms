@@ -27,33 +27,38 @@ func main() {
 	data := LoadData(sourcePath)
 
 	// run experiment
-	timeResults, memResults := evaluteOperations(data, algo, *iter)
+	buildTimeResults, buildMemResults, veriTimeResults, veriMemResults := runExperiment(data, algo, *iter)
 
 	// write to file the stringified result.
 	// output file name pattern: result_[algo]_[inputName]
 	// e.g. result_mt_uniform_samples_100.txt
-	parsedTimeResult := parseIntArrayToList(timeResults)
-	parsedMemResult := parseIntArrayToList(memResults)
-	timeResultName := "result_time_" + *algo + "_" + *fileName
-	memResultName := "result_mem_" + *algo + "_" + *fileName
+	result := formatResults(buildTimeResults, buildMemResults, veriTimeResults, veriMemResults)
+	resultName := "result_" + *algo + "_" + *fileName
 
-	WriteData(basePath+"/results/"+timeResultName, parsedTimeResult)
-	WriteData(basePath+"/results/"+memResultName, parsedMemResult)
+	WriteData(basePath+"/results/"+resultName, result)
 }
 
-func parseIntArrayToList(data []int64) string {
+func formatResults(build_t []int64, build_m []int64, veri_t []int64, veri_m []int64) string {
 	results := ""
-	for i := 0; i < len(data); i++ {
-		if i+1 == len(data) {
-			results = results + strconv.FormatInt(data[i], 10)
+	for i := 0; i < len(build_t); i++ {
+		if i+1 == len(build_t) {
+			results = results + strconv.FormatInt(build_t[i], 10) + ", " + strconv.FormatInt(build_m[i], 10) + ", " + strconv.FormatInt(veri_t[i], 10) + ", " + strconv.FormatInt(veri_m[i], 10)
 		} else {
-			results = results + strconv.FormatInt(data[i], 10) + "\n"
+			results = results + strconv.FormatInt(build_t[i], 10) + ", " + strconv.FormatInt(build_m[i], 10) + ", " + strconv.FormatInt(veri_t[i], 10) + ", " + strconv.FormatInt(veri_m[i], 10) + "\n"
 		}
 	}
 	return results
 }
 
-func evaluteOperations(data []string, algo *string, iter int) ([]int64, []int64) {
+func runExperiment(data []string, algo *string, iter int) ([]int64, []int64, []int64, []int64) {
+
+	buildTime, buildMem := runBuildExperiment(data, algo, iter)
+	verificationTime, verificationMem := runVerificationExperiment(data, algo, iter)
+
+	return buildTime, buildMem, verificationTime, verificationMem
+}
+
+func runBuildExperiment(data []string, algo *string, iter int) ([]int64, []int64) {
 	var timeTrials []int64
 	var memTrials []int64
 
@@ -77,6 +82,55 @@ func evaluteOperations(data []string, algo *string, iter int) ([]int64, []int64)
 			start = time.Now()
 			fastmt.NewFastMerkleTree(data)
 			t = time.Now()
+		}
+
+		a := GetMemUsage()
+
+		timeTrials = append(timeTrials, t.Sub(start).Nanoseconds())
+		memTrials = append(memTrials, a-b)
+	}
+	return timeTrials, memTrials
+}
+
+func runVerificationExperiment(data []string, algo *string, iter int) ([]int64, []int64) {
+	var timeTrials []int64
+	var memTrials []int64
+	averageTimePosition := len(data) / 2
+
+	for i := 0; i < iter; i++ {
+		var start time.Time
+		var t time.Time
+		var b int64
+
+		runtime.GC()
+
+		if *algo == "mt" {
+			start = time.Now()
+			root, path, _, _ := mt.VerifyTransaction(data[averageTimePosition], data)
+			t = time.Now()
+
+			runtime.GC()
+			debug.SetGCPercent(-1)
+			b = GetMemUsage()
+			mt.CheckPath(data[averageTimePosition], root, path)
+		} else if *algo == "hl" {
+			start = time.Now()
+			root, path, _, _ := hashlist.VerifyTransaction(data[averageTimePosition], data)
+			t = time.Now()
+
+			runtime.GC()
+			debug.SetGCPercent(-1)
+			b = GetMemUsage()
+			hashlist.CheckPath(data[averageTimePosition], root, path)
+		} else if *algo == "fmt" {
+			start = time.Now()
+			root, path, _, _ := fastmt.VerifyTransaction(data[averageTimePosition], data)
+			t = time.Now()
+
+			runtime.GC()
+			debug.SetGCPercent(-1)
+			b = GetMemUsage()
+			fastmt.CheckPath(data[averageTimePosition], root, path)
 		}
 
 		a := GetMemUsage()
