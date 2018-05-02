@@ -3,7 +3,7 @@ package mt
 import (
 	"errors"
 
-	. "github.com/SimoneStefani/thesis-algorithms/structures/common"
+	. "github.com/Daynex/thesis-algorithms/structures/common"
 )
 
 type MerkleTree struct {

@@ -3,7 +3,7 @@ package hashlist
 import (
 	"errors"
 
-	. "github.com/SimoneStefani/thesis-algorithms/structures/common"
+	. "github.com/Daynex/thesis-algorithms/structures/common"
 )
 
 type Node struct {
@@ -33,6 +33,59 @@ func NewHashList(data []string) (*HashList, error) {
 	return hashList, nil
 }
 
+func VerifyTransaction(tr string, list []string) (bool, error) {
+
+	pos, err := Includes(tr, list)
+
+	if err != nil {
+		return false, err
+	}
+	path, hl := computePath(pos, list)
+
+	return checkPath(tr, hl.headHash, path), nil
+}
+
+func checkPath(tr string, headHash string, path []string) bool {
+
+	var hash string
+	if HashTransaction(HashTransaction(tr)) == path[0] {
+		hash = path[0]
+	} else {
+		hash = HashTransaction(HashTransaction(tr) + path[0])
+	}
+
+	for i := 1; i < len(path); i++ {
+		hash = HashTransaction(path[i] + hash)
+	}
+
+	return hash == headHash
+}
+
+func computePath(pos int, list []string) ([]string, *HashList) {
+
+	var path []string
+	temp := &List{
+		head: nil,
+		tail: nil,
+	}
+
+	for i, tr := range list {
+		temp = insert(*temp, tr)
+		if pos < i {
+			path = append(path, HashTransaction(tr))
+		} else if pos == i+1 || pos == 0 {
+			path = append(path, temp.head.tr)
+		}
+	}
+
+	hl := &HashList{
+		headHash: temp.head.tr,
+		list:     temp,
+	}
+
+	return path, hl
+}
+
 func buildHashList(data []string) (*HashList, error) {
 
 	if len(data) == 0 {
@@ -47,7 +100,13 @@ func buildHashList(data []string) (*HashList, error) {
 	for _, tr := range data {
 		list = insert(*list, tr)
 	}
-	return nil, nil
+
+	hl := &HashList{
+		list:     list,
+		headHash: list.head.tr,
+	}
+
+	return hl, nil
 }
 
 func insert(list List, tr string) *List {

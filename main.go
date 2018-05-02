@@ -7,10 +7,10 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/SimoneStefani/thesis-algorithms/structures/fastmt"
-	"github.com/SimoneStefani/thesis-algorithms/structures/hashlist"
-	"github.com/SimoneStefani/thesis-algorithms/structures/mt"
-	. "github.com/SimoneStefani/thesis-algorithms/utilities"
+	"github.com/Daynex/thesis-algorithms/structures/fastmt"
+	"github.com/Daynex/thesis-algorithms/structures/hashlist"
+	"github.com/Daynex/thesis-algorithms/structures/mt"
+	. "github.com/Daynex/thesis-algorithms/utilities"
 )
 
 func main() {
