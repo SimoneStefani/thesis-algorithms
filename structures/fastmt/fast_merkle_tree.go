@@ -41,21 +41,21 @@ func NewFastMerkleTree(data []string) (*FastMerkleTree, error) {
 	return t, nil
 }
 
-func VerifyTransaction(tr string, list []string) (bool, error) {
+func VerifyTransaction(tr string, list []string) (string, []VerificationNode, bool, error) {
 
 	pos, err := Includes(tr, list)
 
 	if err != nil {
-		return false, err
+		return "", nil, false, err
 	}
 
 	tree, err := NewFastMerkleTree(list)
 	path := computeMerklePath(pos, tree)
 
-	return checkPath(tr, tree.merkleRoot, path), err
+	return tree.merkleRoot, path, CheckPath(tr, tree.merkleRoot, path), err
 }
 
-func checkPath(tr string, roothash string, path []VerificationNode) bool {
+func CheckPath(tr string, roothash string, path []VerificationNode) bool {
 
 	hash := HashTransaction(HashTransaction(tr))
 

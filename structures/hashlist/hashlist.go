@@ -33,19 +33,19 @@ func NewHashList(data []string) (*HashList, error) {
 	return hashList, nil
 }
 
-func VerifyTransaction(tr string, list []string) (bool, error) {
+func VerifyTransaction(tr string, list []string) (string, []string, bool, error) {
 
 	pos, err := Includes(tr, list)
 
 	if err != nil {
-		return false, err
+		return "", nil, false, err
 	}
 	path, hl := computePath(pos, list)
 
-	return checkPath(tr, hl.headHash, path), nil
+	return hl.headHash, path, CheckPath(tr, hl.headHash, path), nil
 }
 
-func checkPath(tr string, headHash string, path []string) bool {
+func CheckPath(tr string, headHash string, path []string) bool {
 
 	var hash string
 	if HashTransaction(HashTransaction(tr)) == path[0] {
