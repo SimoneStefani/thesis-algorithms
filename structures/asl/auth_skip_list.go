@@ -20,9 +20,12 @@ type Node struct {
 *  A commutative hash function 'h(x,y)' can be constructed with a cryptographic hash funtion 'f()'
 * in the following why: h(x,y) = f(min{x,y}, max{x,y})
  */
-func CommutativeHash(x Node, y Node) string {
-	if x.rank <= y.rank {
-		return HashTransaction(x.tr + y.tr)
+func CommutativeHash(x Node, y Node) (string, error) {
+	if x.rank == y.rank {
+
+		return "", nil
+	} else if x.rank <= y.rank {
+		return HashTransaction(x.tr + y.tr), nil
 	}
-	return HashTransaction(y.tr + x.tr)
+	return HashTransaction(y.tr + x.tr), nil
 }
