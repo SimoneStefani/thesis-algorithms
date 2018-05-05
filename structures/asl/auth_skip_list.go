@@ -145,12 +145,16 @@ func hopforward(node Node) *Node {
 func PrintList(sl SkipList) {
 	for _, list := range sl.lists {
 		currentNode := list.head
+		gaps := int(math.Pow(2.0, float64(list.level))) - 1
 		fmt.Printf("Level %d: ", list.level)
 		for {
 			if currentNode == nil {
 				break
 			}
-			fmt.Printf("-> %s ", currentNode.auth)
+			for i := gaps; i > 0; i-- {
+				fmt.Printf("-----")
+			}
+			fmt.Printf("-> %s ", currentNode.tr)
 			currentNode = currentNode.next
 		}
 		fmt.Print("\n")
