@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/SimoneStefani/thesis-algorithms/structures/asl"
 	"github.com/SimoneStefani/thesis-algorithms/structures/fastmt"
 	"github.com/SimoneStefani/thesis-algorithms/structures/hashlist"
 	"github.com/SimoneStefani/thesis-algorithms/structures/mt"
@@ -14,6 +15,19 @@ import (
 )
 
 func main() {
+
+	test := []string{"1", "2", "3", "4", "5", "6", "7", "8"}
+	sl, _ := asl.NewSkipList(test)
+	asl.PrintList(*sl)
+	for _, el := range test {
+		pos, exists := asl.Includes(*sl, el)
+		if exists {
+			fmt.Printf("%s is part of the list at pos: %d\n", el, pos)
+		} else {
+			fmt.Print(exists)
+		}
+	}
+	return
 
 	// get absolute path of current folder
 	basePath := GetPath()
