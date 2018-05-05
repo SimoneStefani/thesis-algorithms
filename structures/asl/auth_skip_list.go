@@ -1,6 +1,9 @@
 package asl
 
 import (
+	"errors"
+	"math/rand"
+
 	. "github.com/SimoneStefani/thesis-algorithms/structures/common"
 )
 
@@ -13,6 +16,29 @@ type Node struct {
 	rank int
 }
 
+type List struct {
+	level int
+	head  *Node
+	tail  *Node
+}
+
+type SkipList struct {
+	levels int
+	lists  []List
+}
+
+func coinFlipIsHead() bool {
+	return rand.Intn(2) == 1
+}
+
+func down(node Node) *Node {
+	return node.down
+}
+
+func hopforward(node Node) *Node {
+	return node.next
+}
+
 /* 	Commutative Hashing Funtion as suggested in:
 *		Goodrich, M. T., & Tamassia, R. (2000).
 *		Efficient authenticated dictionaries with skip lists and commutative hashing.
@@ -22,8 +48,7 @@ type Node struct {
  */
 func CommutativeHash(x Node, y Node) (string, error) {
 	if x.rank == y.rank {
-
-		return "", nil
+		return "", errors.New("Error: Two nodes with equal rank.")
 	} else if x.rank <= y.rank {
 		return HashTransaction(x.tr + y.tr), nil
 	}
