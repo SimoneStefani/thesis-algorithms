@@ -3,16 +3,15 @@ package asl
 import (
 	"errors"
 	"fmt"
-	"math/rand"
-	"time"
 	//. "github.com/SimoneStefani/thesis-algorithms/structures/common"
 )
 
 type Node struct {
-	prev *Node
-	next *Node
-	tr   string
-	down *Node
+	prev  *Node
+	next  *Node
+	tr    string
+	down  *Node
+	index int
 }
 
 type List struct {
@@ -65,7 +64,7 @@ func appendToSkipList(sl SkipList, tr string) *SkipList {
 
 	nextLevel := 1
 	for {
-		if !coinFlipIsHead() {
+		if sl.lists[nextLevel-1].tail.index%2 == 0 {
 			break
 		}
 		if nextLevel > sl.levels {
@@ -93,7 +92,8 @@ func insert(list List, tr string) *List {
 			next: nil,
 			tr:   tr,
 			//tr:   HashTransaction(HashTransaction(tr)),
-			down: nil,
+			down:  nil,
+			index: 0,
 		}
 		list.head = new
 		list.tail = new
@@ -107,15 +107,10 @@ func insert(list List, tr string) *List {
 		}
 		list.tail = new
 		new.prev.next = new
+		new.index = new.prev.index + 1
 	}
 
 	return &list
-}
-
-func coinFlipIsHead() bool {
-	s1 := rand.NewSource(time.Now().UnixNano())
-	r1 := rand.New(s1)
-	return r1.Intn(2) == 1
 }
 
 func down(node Node) *Node {
