@@ -142,6 +142,16 @@ func Includes(sl SkipList, tr string) (int, bool) {
 			if currentNode.down != nil {
 				currentNode = currentNode.down
 				nextNode = currentNode.next
+				if nextNode == nil {
+					for {
+						if currentNode.down.next != nil {
+							currentNode = currentNode.down
+							nextNode = currentNode.next
+							break
+						}
+						currentNode = currentNode.down
+					}
+				}
 			} else {
 				return -1, false
 			}
@@ -149,6 +159,14 @@ func Includes(sl SkipList, tr string) (int, bool) {
 		if tr >= nextNode.tr {
 			currentNode = nextNode
 			nextNode = currentNode.next
+		} else {
+			if currentNode.down != nil {
+				currentNode = currentNode.down
+				nextNode = currentNode.next
+			} else {
+				nextNode = currentNode
+				currentNode = currentNode.prev
+			}
 		}
 	}
 }
