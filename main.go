@@ -19,6 +19,13 @@ func main() {
 	test := []string{"1", "2", "3", "4", "5", "6", "7", "8", "9"}
 	sl, _ := asl.NewSkipList(test)
 	asl.PrintList(*sl)
+	lookedFor := "3"
+	pos, exists := asl.Includes(*sl, lookedFor)
+	if exists {
+		fmt.Printf("%s is part of the list at pos: %d", lookedFor, pos)
+	} else {
+		fmt.Print(exists)
+	}
 	return
 
 	// get absolute path of current folder

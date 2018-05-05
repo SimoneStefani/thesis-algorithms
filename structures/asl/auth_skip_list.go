@@ -126,20 +126,44 @@ func insert(list List, tr string, index int) *List {
 	return &list
 }
 
+func Includes(sl SkipList, tr string) (int, bool) {
+
+	currentNode := sl.lists[sl.levels-1].head
+	if currentNode == nil {
+		return -1, false
+	}
+
+	nextNode := currentNode.next
+	for {
+		if tr == currentNode.tr {
+			return currentNode.index, true
+		}
+		if nextNode == nil {
+			if currentNode.down != nil {
+				currentNode = currentNode.down
+				nextNode = currentNode.next
+			} else {
+				return -1, false
+			}
+		}
+		if tr >= nextNode.tr {
+			currentNode = nextNode
+			nextNode = currentNode.next
+		}
+	}
+}
+
+func isGreaterThan(x string, y string) bool {
+	//Compares two strings in alpabetical order
+	return true
+}
+
 func computePartialAuthenticator(node Node, level int) string {
 	prevAuth := ""
 	if node.prev != nil {
 		prevAuth = "|" + node.prev.auth
 	}
 	return "{" + strconv.Itoa(node.index) + "|" + strconv.Itoa(level) + "|" + node.tr + prevAuth + "}"
-}
-
-func down(node Node) *Node {
-	return node.down
-}
-
-func hopforward(node Node) *Node {
-	return node.next
 }
 
 func PrintList(sl SkipList) {
