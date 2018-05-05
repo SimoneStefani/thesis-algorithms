@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/SimoneStefani/thesis-algorithms/structures/asl"
 	"github.com/SimoneStefani/thesis-algorithms/structures/fastmt"
 	"github.com/SimoneStefani/thesis-algorithms/structures/hashlist"
 	"github.com/SimoneStefani/thesis-algorithms/structures/mt"
@@ -14,6 +15,11 @@ import (
 )
 
 func main() {
+
+	test := []string{"1", "2", "3", "4", "5", "6", "7", "8", "9"}
+	sl, _ := asl.NewSkipList(test)
+	asl.PrintList(*sl)
+	return
 
 	// get absolute path of current folder
 	basePath := GetPath()

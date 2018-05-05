@@ -89,7 +89,7 @@ func computePath(pos int, list []string) ([]string, *HashList) {
 func buildHashList(data []string) (*HashList, error) {
 
 	if len(data) == 0 {
-		return nil, errors.New("Error: cannot construct tree with no content.")
+		return nil, errors.New("Error: cannot construct hashlist with no content.")
 	}
 
 	list := &List{
