@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"math"
 	"strconv"
-	//. "github.com/SimoneStefani/thesis-algorithms/structures/common"
+
+	. "github.com/SimoneStefani/thesis-algorithms/structures/common"
 )
 
 type Node struct {
@@ -126,35 +127,61 @@ func insert(list List, tr string, index int) *List {
 	return &list
 }
 
-func Includes(sl SkipList, tr string) (int, bool) {
+// Level 3: ------------------------------------> h
+// Level 2: ----------------> d ----------------> h
+// Level 1: ------> b ------> d ------> f ------> h ------> j
+// Level 0: -> a -> b -> c -> d -> e -> f -> g -> h -> i -> j
 
-	currentNode := sl.lists[sl.levels-1].head
-	if currentNode == nil {
+func Lookup(sl SkipList, tr string) (int, bool) {
+
+	// fmt.Print("\n")
+	// fmt.Printf("Searching Transaction ---> %s\n", tr)
+
+	currentLevel := sl.levels - 1
+	nextNode := sl.lists[currentLevel].head
+	currentNode := nextNode
+	if nextNode == nil {
 		return -1, false
 	}
 
-	nextNode := currentNode.next
+	// Find list to start from
 	for {
-		if tr == currentNode.tr {
-			return currentNode.index, true
-		}
-		if nextNode == nil {
-			if currentNode.down != nil {
-				currentNode = currentNode.down
-				nextNode = currentNode.next
-				if nextNode == nil {
-					for {
-						if currentNode.down.next != nil {
-							currentNode = currentNode.down
-							nextNode = currentNode.next
-							break
-						}
-						currentNode = currentNode.down
-					}
-				}
-			} else {
+		if tr >= nextNode.tr {
+			currentNode = nextNode
+			nextNode = currentNode.next
+			// fmt.Printf("Starts on Level %d with CurrentNode: %s\n\n", currentLevel, currentNode.tr)
+			break
+		} else {
+			currentLevel = currentLevel - 1
+			if currentLevel < 0 {
 				return -1, false
 			}
+			nextNode = sl.lists[currentLevel].head
+		}
+	}
+
+	for {
+		//Check existence of current nodes
+		for {
+			if nextNode == nil {
+				// fmt.Print("LOOP -> ")
+				// fmt.Printf("NextNode is Null, CurrentNode is: %s\n", currentNode.tr)
+				if currentNode.down == nil {
+					if currentNode.tr == tr {
+						return currentNode.index, true
+					}
+					return -1, false
+				}
+				currentNode = currentNode.down
+				nextNode = currentNode.next
+			} else {
+				//fmt.Printf("CurrentNode is: %s\n", currentNode.tr)
+				break
+			}
+		}
+
+		if tr == currentNode.tr {
+			return currentNode.index, true
 		}
 		if tr >= nextNode.tr {
 			currentNode = nextNode
@@ -164,19 +191,22 @@ func Includes(sl SkipList, tr string) (int, bool) {
 				currentNode = currentNode.down
 				nextNode = currentNode.next
 			} else {
-				nextNode = currentNode
-				currentNode = currentNode.prev
+				currentNode = nextNode
+				nextNode = currentNode.next
 			}
 		}
 	}
 }
 
-func isGreaterThan(x string, y string) bool {
-	//Compares two strings in alpabetical order
-	return true
+func computePartialAuthenticator(node Node, level int) string {
+	prevAuth := ""
+	if node.prev != nil {
+		prevAuth = "|" + node.prev.auth
+	}
+	return HashTransaction(strconv.Itoa(node.index) + strconv.Itoa(level) + node.tr + prevAuth)
 }
 
-func computePartialAuthenticator(node Node, level int) string {
+func dummyComputePartialAuthenticator(node Node, level int) string {
 	prevAuth := ""
 	if node.prev != nil {
 		prevAuth = "|" + node.prev.auth
@@ -202,6 +232,14 @@ func PrintList(sl SkipList) {
 		}
 		fmt.Print("\n")
 	}
+}
+
+func PrintSkipListHeadsAndTails(sl SkipList) {
+	for j := len(sl.lists) - 1; j >= 0; j-- {
+		list := sl.lists[j]
+		fmt.Printf("List %d --> HEAD: %s , TAIL: %s\n", j, list.head.tr, list.tail.tr)
+	}
+	fmt.Print("\n")
 }
 
 /* 	Commutative Hashing Funtion as suggested in:

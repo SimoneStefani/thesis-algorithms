@@ -16,17 +16,27 @@ import (
 
 func main() {
 
-	test := []string{"1", "2", "3", "4", "5", "6", "7", "8"}
+	test := []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j"}
 	sl, _ := asl.NewSkipList(test)
 	asl.PrintList(*sl)
-	for _, el := range test {
-		pos, exists := asl.Includes(*sl, el)
-		if exists {
-			fmt.Printf("%s is part of the list at pos: %d\n", el, pos)
-		} else {
-			fmt.Print(exists)
-		}
-	}
+
+	//Print Examples for Searching the Skip List
+
+	// pos, exists := asl.Lookup(*sl, "k")
+	// if exists {
+	// 	fmt.Printf("%s is part of the list at pos: %d\n", "10", pos)
+	// } else {
+	// 	fmt.Printf("%t\n", exists)
+	// }
+
+	// for _, el := range test {
+	// 	pos, exists = asl.Lookup(*sl, el)
+	// 	if exists {
+	// 		fmt.Printf("%s is part of the list at pos: %d\n", el, pos)
+	// 	} else {
+	// 		fmt.Printf("%t\n", exists)
+	// 	}
+	// }
 	return
 
 	// get absolute path of current folder
