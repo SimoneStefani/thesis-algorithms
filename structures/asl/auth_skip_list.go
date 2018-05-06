@@ -15,18 +15,26 @@ type Node struct {
 	tr    string
 	auth  string
 	down  *Node
+	up    *Node
 	index int
 }
 
 type List struct {
-	level int
-	head  *Node
-	tail  *Node
+	level  int
+	length int
+	head   *Node
+	tail   *Node
 }
 
 type SkipList struct {
 	levels int
+	auth   string
 	lists  []List
+}
+
+type ProofComponent struct {
+	tr            string
+	authenticator string
 }
 
 func NewSkipList(data []string) (*SkipList, error) {
@@ -39,6 +47,70 @@ func NewSkipList(data []string) (*SkipList, error) {
 	return skiplist, nil
 }
 
+//A membership claim has the form “Data element tr occupies the i-th position
+//of the AASL whose n-th authenticator is known to the verifier,” and is denoted by ⟨i,n,d⟩.
+// i = pos(tr)
+// n = SkipList.auth
+// d = tr
+func VerifyTransaction(sl SkipList, tr string) (string, []string, bool, error) {
+
+	_, nodePointer, exists := Lookup(sl, tr)
+	if !exists {
+		return "", nil, false, errors.New("error: not part of skip list")
+	}
+	computeMembershipProof(*nodePointer, tr, sl)
+
+	return "", nil, false, nil
+}
+
+func computeMembershipProof(node Node, tr string, sl SkipList) ([]ProofComponent, error) {
+	var membershipProof []ProofComponent
+	//lastIndex := sl.lists[0].length - 1
+	tempNode := node
+	//indexOfNext := tempNode.index
+	for {
+		membershipProof = append(membershipProof, computeProofComponent(tempNode))
+	}
+}
+
+func computeProofComponent(node Node) ProofComponent {
+
+	proofComponent := &ProofComponent{
+		tr:            node.tr,
+		authenticator: node.auth,
+	}
+	tempNode := node
+	for {
+		if tempNode.up == nil {
+			return *proofComponent
+		} else {
+			proofComponent.authenticator = proofComponent.authenticator + tempNode.up.auth
+			tempNode = *tempNode.up
+		}
+	}
+}
+
+// Returns the highest linked list level l that must be followed in the Skip List
+// in order to travel from element at 'start' to element at 'end'
+func singleHopTraversalLevel(start int, end int) int {
+	level := 0
+	var temp int
+
+	for {
+		temp = int(math.Pow(2.0, float64(level)))
+
+		if start%temp != 0 {
+			break
+		}
+		if start+temp <= end {
+			level = level + 1
+		} else {
+			return level
+		}
+	}
+	return level
+}
+
 func buildSkipList(data []string) (*SkipList, error) {
 
 	if len(data) == 0 {
@@ -46,9 +118,10 @@ func buildSkipList(data []string) (*SkipList, error) {
 	}
 
 	list := &List{
-		level: 0,
-		head:  nil,
-		tail:  nil,
+		level:  0,
+		head:   nil,
+		tail:   nil,
+		length: 0,
 	}
 	sl := &SkipList{
 		lists:  []List{*list},
@@ -58,6 +131,7 @@ func buildSkipList(data []string) (*SkipList, error) {
 	for _, tr := range data {
 		sl = appendToSkipList(*sl, tr)
 	}
+	sl.auth = sl.lists[len(sl.lists)-1].tail.auth
 
 	return sl, nil
 }
@@ -73,7 +147,7 @@ func appendToSkipList(sl SkipList, tr string) *SkipList {
 	}
 
 	sl.lists[0] = *insert(sl.lists[0], tr, currentIndex)
-	authBuffer = authBuffer + computePartialAuthenticator(*sl.lists[0].tail, 0)
+	authBuffer = authBuffer + computePartialAuthenticator(sl.lists[0], *sl.lists[0].tail, 0)
 
 	nextLevel := 1
 	for {
@@ -83,19 +157,21 @@ func appendToSkipList(sl SkipList, tr string) *SkipList {
 		if nextLevel > sl.levels {
 			sl.levels = nextLevel
 			newList := &List{
-				level: nextLevel,
-				head:  nil,
-				tail:  nil,
+				level:  nextLevel,
+				head:   nil,
+				tail:   nil,
+				length: 0,
 			}
 			sl.lists = append(sl.lists, *newList)
 		}
 		sl.lists[nextLevel] = *insert(sl.lists[nextLevel], tr, currentIndex)
 		sl.lists[nextLevel].tail.down = sl.lists[nextLevel-1].tail
-		authBuffer = authBuffer + computePartialAuthenticator(*sl.lists[nextLevel].tail, nextLevel)
+		sl.lists[nextLevel-1].tail.up = sl.lists[nextLevel].tail
+		authBuffer = authBuffer + sl.lists[nextLevel-1].tail.auth
 		nextLevel = nextLevel + 1
 	}
 
-	sl.lists[0].tail.auth = authBuffer
+	sl.lists[0].tail.auth = HashTransaction(authBuffer)
 
 	return &sl
 }
@@ -108,7 +184,9 @@ func insert(list List, tr string, index int) *List {
 			next:  nil,
 			tr:    tr,
 			down:  nil,
+			up:    nil,
 			index: index,
+			auth:  HashTransaction(HashTransaction(tr)),
 		}
 		list.head = new
 		list.tail = new
@@ -118,21 +196,25 @@ func insert(list List, tr string, index int) *List {
 			prev:  list.tail,
 			tr:    tr,
 			down:  nil,
+			up:    nil,
 			index: index,
 		}
 		list.tail = new
 		new.prev.next = new
+		new.auth = computePartialAuthenticator(list, *list.tail, list.level)
+		list.length = list.length + 1
 	}
 
 	return &list
 }
 
+// Example SL with transactions "a"-"j"
 // Level 3: ------------------------------------> h
 // Level 2: ----------------> d ----------------> h
 // Level 1: ------> b ------> d ------> f ------> h ------> j
 // Level 0: -> a -> b -> c -> d -> e -> f -> g -> h -> i -> j
 
-func Lookup(sl SkipList, tr string) (int, bool) {
+func Lookup(sl SkipList, tr string) (int, *Node, bool) {
 
 	// fmt.Print("\n")
 	// fmt.Printf("Searching Transaction ---> %s\n", tr)
@@ -141,7 +223,7 @@ func Lookup(sl SkipList, tr string) (int, bool) {
 	nextNode := sl.lists[currentLevel].head
 	currentNode := nextNode
 	if nextNode == nil {
-		return -1, false
+		return -1, nil, false
 	}
 
 	// Find list to start from
@@ -154,7 +236,7 @@ func Lookup(sl SkipList, tr string) (int, bool) {
 		} else {
 			currentLevel = currentLevel - 1
 			if currentLevel < 0 {
-				return -1, false
+				return -1, nil, false
 			}
 			nextNode = sl.lists[currentLevel].head
 		}
@@ -168,9 +250,9 @@ func Lookup(sl SkipList, tr string) (int, bool) {
 				// fmt.Printf("NextNode is Null, CurrentNode is: %s\n", currentNode.tr)
 				if currentNode.down == nil {
 					if currentNode.tr == tr {
-						return currentNode.index, true
+						return currentNode.index, currentNode, true
 					}
-					return -1, false
+					return -1, nil, false
 				}
 				currentNode = currentNode.down
 				nextNode = currentNode.next
@@ -181,7 +263,7 @@ func Lookup(sl SkipList, tr string) (int, bool) {
 		}
 
 		if tr == currentNode.tr {
-			return currentNode.index, true
+			return currentNode.index, currentNode, true
 		}
 		if tr >= nextNode.tr {
 			currentNode = nextNode
@@ -198,14 +280,23 @@ func Lookup(sl SkipList, tr string) (int, bool) {
 	}
 }
 
-func computePartialAuthenticator(node Node, level int) string {
+func computePartialAuthenticator(list List, node Node, level int) string {
 	prevAuth := ""
+
 	if node.prev != nil {
-		prevAuth = "|" + node.prev.auth
+		tempNode := node.prev
+		for {
+			if tempNode.down == nil {
+				prevAuth = tempNode.auth
+				break
+			}
+			tempNode = tempNode.down
+		}
 	}
 	return HashTransaction(strconv.Itoa(node.index) + strconv.Itoa(level) + node.tr + prevAuth)
 }
 
+//For debugging purposes only
 func dummyComputePartialAuthenticator(node Node, level int) string {
 	prevAuth := ""
 	if node.prev != nil {
@@ -228,6 +319,25 @@ func PrintList(sl SkipList) {
 				fmt.Printf("-----")
 			}
 			fmt.Printf("-> %s ", currentNode.tr)
+			currentNode = currentNode.next
+		}
+		fmt.Print("\n")
+	}
+}
+func PrintListAuthenticators(sl SkipList) {
+	for i := len(sl.lists) - 1; i >= 0; i-- {
+		list := sl.lists[i]
+		currentNode := list.head
+		gaps := int(math.Pow(2.0, float64(list.level))) - 1
+		fmt.Printf("Level %d: ", list.level)
+		for {
+			if currentNode == nil {
+				break
+			}
+			for j := gaps; j > 0; j-- {
+				fmt.Printf("---------")
+			}
+			fmt.Printf("-> %s ", currentNode.auth[0:5])
 			currentNode = currentNode.next
 		}
 		fmt.Print("\n")
