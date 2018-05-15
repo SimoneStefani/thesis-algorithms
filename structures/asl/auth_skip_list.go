@@ -37,6 +37,11 @@ type ProofComponent struct {
 	authenticator string
 }
 
+// Example SL with transactions "a"-"j"
+// Level 3: ------------------------------------> h
+// Level 2: ----------------> d ----------------> h
+// Level 1: ------> b ------> d ------> f ------> h ------> j
+// Level 0: -> a -> b -> c -> d -> e -> f -> g -> h -> i -> j
 func NewSkipList(data []string) (*SkipList, error) {
 	skiplist, err := buildSkipList(data)
 
@@ -75,6 +80,7 @@ func computeMembershipProof(node Node, tr string, sl SkipList) ([]ProofComponent
 	}
 }
 
+// Incomplete
 func computeProofComponent(node Node) ProofComponent {
 
 	proofComponent := &ProofComponent{
@@ -93,13 +99,12 @@ func computeProofComponent(node Node) ProofComponent {
 
 // Returns the highest linked list level l that must be followed in the Skip List
 // in order to travel from element at 'start' to element at 'end'
-func singleHopTraversalLevel(start int, end int) int {
+func SingleHopTraversalLevel(start int, end int) int {
 	level := 0
 	var temp int
 
 	for {
 		temp = int(math.Pow(2.0, float64(level)))
-
 		if start%temp != 0 {
 			break
 		}
@@ -148,9 +153,12 @@ func appendToSkipList(sl SkipList, tr string) *SkipList {
 		currentIndex = sl.lists[0].tail.index + 1
 	}
 
+	// Insert to base list
 	sl.lists[0] = *insert(sl.lists[0], tr, currentIndex)
-	authBuffer = authBuffer + computePartialAuthenticator(sl.lists[0], *sl.lists[0].tail, 0)
+	// Authentication buffer is used to computer the Authenticator of the base Node
+	authBuffer = computePartialAuthenticator(sl.lists[0], *sl.lists[0].tail, 0)
 
+	// Insert to all upper lists that the element belongs to
 	nextLevel := 1
 	for {
 		if (currentIndex+1)%int(math.Pow(2.0, float64(nextLevel))) != 0 {
@@ -209,12 +217,6 @@ func insert(list List, tr string, index int) *List {
 
 	return &list
 }
-
-// Example SL with transactions "a"-"j"
-// Level 3: ------------------------------------> h
-// Level 2: ----------------> d ----------------> h
-// Level 1: ------> b ------> d ------> f ------> h ------> j
-// Level 0: -> a -> b -> c -> d -> e -> f -> g -> h -> i -> j
 
 func Lookup(sl SkipList, tr string) (int, *Node, bool) {
 
@@ -301,8 +303,16 @@ func computePartialAuthenticator(list List, node Node, level int) string {
 //For debugging purposes only
 func dummyComputePartialAuthenticator(node Node, level int) string {
 	prevAuth := ""
+
 	if node.prev != nil {
-		prevAuth = "|" + node.prev.auth
+		tempNode := node.prev
+		for {
+			if tempNode.down == nil {
+				prevAuth = "|" + tempNode.auth
+				break
+			}
+			tempNode = tempNode.down
+		}
 	}
 	return "{" + strconv.Itoa(node.index) + "|" + strconv.Itoa(level) + "|" + node.tr + prevAuth + "}"
 }

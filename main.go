@@ -16,28 +16,37 @@ import (
 
 func main() {
 
-	// test := []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j"}
-	// sl, _ := asl.NewSkipList(test)
-	// asl.PrintListAuthenticators(*sl)
+	test := []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j"}
+	sl, _ := asl.NewSkipList(test)
+	asl.PrintListAuthenticators(*sl)
+	fmt.Print("\n")
 
 	// //Print Examples for Searching the Skip List
+	// fmt.Print("Testing: First should be false, rest should give position\n")
+	// testFor := "k"
+	// pos, _, exists := asl.Lookup(*sl, testFor)
+	// if exists {
+	// 	fmt.Printf("%s at pos: %d\n", "10", pos)
+	// } else {
+	// 	fmt.Printf("%s is %t\n", testFor, exists)
+	// }
 
-	// // pos, exists := asl.Lookup(*sl, "k")
-	// // if exists {
-	// // 	fmt.Printf("%s is part of the list at pos: %d\n", "10", pos)
-	// // } else {
-	// // 	fmt.Printf("%t\n", exists)
-	// // }
+	// for _, el := range test {
+	// 	pos, _, exists = asl.Lookup(*sl, el)
+	// 	if exists {
+	// 		fmt.Printf("%s at pos: %d\n", el, pos)
+	// 	} else {
+	// 		fmt.Printf("%s is %t\n", el, pos)
+	// 	}
+	// }
 
-	// // for _, el := range test {
-	// // 	pos, exists = asl.Lookup(*sl, el)
-	// // 	if exists {
-	// // 		fmt.Printf("%s is part of the list at pos: %d\n", el, pos)
-	// // 	} else {
-	// // 		fmt.Printf("%t\n", exists)
-	// // 	}
-	// // }
-	// return
+	fmt.Print("\nChecking SingleHopTraversel Function:\n")
+	for i := 0; i < 11; i++ {
+		fmt.Printf("%d needs level %d to reach %d\n", i, asl.SingleHopTraversalLevel(i, 10), 10)
+	}
+	fmt.Printf("%d needs level %d to reach %d\n", 3, asl.SingleHopTraversalLevel(3, 7), 7)
+
+	return
 
 	// get absolute path of current folder
 	basePath := GetPath()
