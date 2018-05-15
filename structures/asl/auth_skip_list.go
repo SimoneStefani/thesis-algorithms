@@ -47,8 +47,8 @@ func NewSkipList(data []string) (*SkipList, error) {
 	return skiplist, nil
 }
 
-//A membership claim has the form “Data element tr occupies the i-th position
-//of the AASL whose n-th authenticator is known to the verifier,” and is denoted by ⟨i,n,d⟩.
+// A membership claim has the form “Data element 'tr' occupies the i-th position
+// of the AASL whose n-th authenticator is known to the verifier,” and is denoted by ⟨i,n,d⟩.
 // i = pos(tr)
 // n = SkipList.auth
 // d = tr
@@ -60,9 +60,11 @@ func VerifyTransaction(sl SkipList, tr string) (string, []string, bool, error) {
 	}
 	computeMembershipProof(*nodePointer, tr, sl)
 
+	// Incomplete
 	return "", nil, false, nil
 }
 
+// Incomplete
 func computeMembershipProof(node Node, tr string, sl SkipList) ([]ProofComponent, error) {
 	var membershipProof []ProofComponent
 	//lastIndex := sl.lists[0].length - 1
@@ -83,10 +85,9 @@ func computeProofComponent(node Node) ProofComponent {
 	for {
 		if tempNode.up == nil {
 			return *proofComponent
-		} else {
-			proofComponent.authenticator = proofComponent.authenticator + tempNode.up.auth
-			tempNode = *tempNode.up
 		}
+		proofComponent.authenticator = proofComponent.authenticator + tempNode.up.auth
+		tempNode = *tempNode.up
 	}
 }
 
@@ -131,6 +132,7 @@ func buildSkipList(data []string) (*SkipList, error) {
 	for _, tr := range data {
 		sl = appendToSkipList(*sl, tr)
 	}
+	// TO DO: check, is always top list?
 	sl.auth = sl.lists[len(sl.lists)-1].tail.auth
 
 	return sl, nil

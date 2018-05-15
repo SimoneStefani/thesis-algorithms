@@ -16,28 +16,28 @@ import (
 
 func main() {
 
-	test := []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j"}
-	sl, _ := asl.NewSkipList(test)
-	asl.PrintListAuthenticators(*sl)
+	// test := []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j"}
+	// sl, _ := asl.NewSkipList(test)
+	// asl.PrintListAuthenticators(*sl)
 
-	//Print Examples for Searching the Skip List
+	// //Print Examples for Searching the Skip List
 
-	// pos, exists := asl.Lookup(*sl, "k")
-	// if exists {
-	// 	fmt.Printf("%s is part of the list at pos: %d\n", "10", pos)
-	// } else {
-	// 	fmt.Printf("%t\n", exists)
-	// }
+	// // pos, exists := asl.Lookup(*sl, "k")
+	// // if exists {
+	// // 	fmt.Printf("%s is part of the list at pos: %d\n", "10", pos)
+	// // } else {
+	// // 	fmt.Printf("%t\n", exists)
+	// // }
 
-	// for _, el := range test {
-	// 	pos, exists = asl.Lookup(*sl, el)
-	// 	if exists {
-	// 		fmt.Printf("%s is part of the list at pos: %d\n", el, pos)
-	// 	} else {
-	// 		fmt.Printf("%t\n", exists)
-	// 	}
-	// }
-	return
+	// // for _, el := range test {
+	// // 	pos, exists = asl.Lookup(*sl, el)
+	// // 	if exists {
+	// // 		fmt.Printf("%s is part of the list at pos: %d\n", el, pos)
+	// // 	} else {
+	// // 		fmt.Printf("%t\n", exists)
+	// // 	}
+	// // }
+	// return
 
 	// get absolute path of current folder
 	basePath := GetPath()
@@ -106,6 +106,10 @@ func runBuildExperiment(data []string, algo *string, iter int) ([]int64, []int64
 			start = time.Now()
 			fastmt.NewFastMerkleTree(data)
 			t = time.Now()
+		} else if *algo == "sl" {
+			start = time.Now()
+			asl.NewSkipList(data)
+			t = time.Now()
 		}
 
 		a := GetMemUsage()
@@ -155,6 +159,8 @@ func runVerificationExperiment(data []string, algo *string, iter int) ([]int64, 
 			debug.SetGCPercent(-1)
 			b = GetMemUsage()
 			fastmt.CheckPath(data[averageTimePosition], root, path)
+		} else if *algo == "sl" {
+			return nil, nil
 		}
 
 		a := GetMemUsage()
