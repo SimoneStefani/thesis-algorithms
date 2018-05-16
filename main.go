@@ -18,7 +18,7 @@ func main() {
 
 	test := []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j"}
 	sl, _ := asl.NewSkipList(test)
-	asl.PrintListAuthenticators(*sl)
+	asl.PrintList(*sl)
 	fmt.Print("\n")
 
 	// //Print Examples for Searching the Skip List

@@ -97,24 +97,26 @@ func computeProofComponent(node Node) ProofComponent {
 	}
 }
 
-// Returns the highest linked list level l that must be followed in the Skip List
+// SingleHopTraversalLevel returns the highest linked list level l that must be followed in the Skip List
 // in order to travel from element at 'start' to element at 'end'
 func SingleHopTraversalLevel(start int, end int) int {
-	level := 0
+	currentLevel := 0
+	highestLevel := 0
 	var temp int
 
 	for {
-		temp = int(math.Pow(2.0, float64(level)))
+		temp = int(math.Pow(2.0, float64(currentLevel)))
 		if start%temp != 0 {
 			break
 		}
 		if start+temp <= end {
-			level = level + 1
+			highestLevel = currentLevel
 		} else {
-			return level
+			return highestLevel
 		}
+		currentLevel = currentLevel + 1
 	}
-	return level
+	return highestLevel
 }
 
 func buildSkipList(data []string) (*SkipList, error) {
@@ -123,19 +125,32 @@ func buildSkipList(data []string) (*SkipList, error) {
 		return nil, errors.New("Error: cannot construct skip list with no content.")
 	}
 
+	firstNode := &Node{
+		prev:  nil,
+		next:  nil,
+		tr:    data[0],
+		auth:  HashTransaction(HashTransaction(data[0])),
+		down:  nil,
+		up:    nil,
+		index: 0,
+	}
+
 	list := &List{
 		level:  0,
-		head:   nil,
-		tail:   nil,
+		head:   firstNode,
+		tail:   firstNode,
 		length: 0,
 	}
+	list.head.next = list.tail
+	list.tail.prev = list.head
+
 	sl := &SkipList{
 		lists:  []List{*list},
 		levels: 0,
 	}
 
-	for _, tr := range data {
-		sl = appendToSkipList(*sl, tr)
+	for i := 1; i < len(data); i++ {
+		sl = appendToSkipList(*sl, data[i])
 	}
 	// TO DO: check, is always top list?
 	sl.auth = sl.lists[len(sl.lists)-1].tail.auth
@@ -147,11 +162,7 @@ func appendToSkipList(sl SkipList, tr string) *SkipList {
 
 	var currentIndex int
 	var authBuffer string
-	if sl.lists[0].tail == nil {
-		currentIndex = 0
-	} else {
-		currentIndex = sl.lists[0].tail.index + 1
-	}
+	currentIndex = sl.lists[0].tail.index + 1
 
 	// Insert to base list
 	sl.lists[0] = *insert(sl.lists[0], tr, currentIndex)
@@ -161,7 +172,7 @@ func appendToSkipList(sl SkipList, tr string) *SkipList {
 	// Insert to all upper lists that the element belongs to
 	nextLevel := 1
 	for {
-		if (currentIndex+1)%int(math.Pow(2.0, float64(nextLevel))) != 0 {
+		if (currentIndex)%int(math.Pow(2.0, float64(nextLevel))) != 0 {
 			break
 		}
 		if nextLevel > sl.levels {
@@ -173,6 +184,12 @@ func appendToSkipList(sl SkipList, tr string) *SkipList {
 				length: 0,
 			}
 			sl.lists = append(sl.lists, *newList)
+
+			// Since new List, Insert the Head of the Baselist to the new list
+			sl.lists[nextLevel] = *insert(sl.lists[nextLevel], sl.lists[0].head.tr, 0)
+			sl.lists[nextLevel].head.down = sl.lists[nextLevel-1].head
+			sl.lists[nextLevel-1].head.up = sl.lists[nextLevel].head
+
 		}
 		sl.lists[nextLevel] = *insert(sl.lists[nextLevel], tr, currentIndex)
 		sl.lists[nextLevel].tail.down = sl.lists[nextLevel-1].tail
@@ -327,8 +344,10 @@ func PrintList(sl SkipList) {
 			if currentNode == nil {
 				break
 			}
-			for j := gaps; j > 0; j-- {
-				fmt.Printf("-----")
+			if currentNode != list.head {
+				for j := gaps; j > 0; j-- {
+					fmt.Printf("-----")
+				}
 			}
 			fmt.Printf("-> %s ", currentNode.tr)
 			currentNode = currentNode.next
@@ -336,6 +355,7 @@ func PrintList(sl SkipList) {
 		fmt.Print("\n")
 	}
 }
+
 func PrintListAuthenticators(sl SkipList) {
 	for i := len(sl.lists) - 1; i >= 0; i-- {
 		list := sl.lists[i]
@@ -346,8 +366,10 @@ func PrintListAuthenticators(sl SkipList) {
 			if currentNode == nil {
 				break
 			}
-			for j := gaps; j > 0; j-- {
-				fmt.Printf("---------")
+			if currentNode != list.head {
+				for j := gaps; j > 0; j-- {
+					fmt.Printf("---------")
+				}
 			}
 			fmt.Printf("-> %s ", currentNode.auth[0:5])
 			currentNode = currentNode.next
