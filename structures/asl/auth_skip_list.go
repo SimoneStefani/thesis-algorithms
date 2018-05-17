@@ -75,9 +75,36 @@ func VerifyTransaction(sl SkipList, tr string) (bool, error) {
 	return verifactionResult, err
 }
 
+// ProcessMembershipProof (i,n,d,T,E) return true or false.
+// Processes the membership proof E of the membership claim ⟨i, n, d⟩ against authenticator T .
+// In this function 'node' holdes the 'index', and 'datum'
+// 'sl' holds the authenticator T which alwas is the digest of the Skip List
+// 'proof' holds the E
 func verifyMembershipProof(node Node, sl SkipList, proof []ProofComponent) bool {
 
-	return false
+	currentAuth := processProofComponent(node.index, proof[0])
+	prevAuth := currentAuth
+	level := SingleHopTraversalLevel(node.index, sl.lists[0].length)
+	index := node.index + int(math.Pow(2.0, float64(level)))
+	componentCounter := 2
+
+	for i := 1; i < len(proof); i++ {
+		if index >= sl.lists[0].length {
+			break
+		}
+		currentAuth = processProofComponent(index, proof[i])
+		fmt.Printf("%s\n", currentAuth[0:5])
+		fmt.Printf("%s\n", prevAuth[0:5])
+		if proof[i].authenticator[level] != prevAuth {
+			return false
+		}
+		prevAuth = currentAuth
+		level = SingleHopTraversalLevel(index, sl.lists[0].length)
+		index = index + int(math.Pow(2.0, float64(level)))
+		componentCounter++
+	}
+
+	return true
 }
 
 // Processes a single Proof Component --> Calculates Ti
@@ -85,8 +112,9 @@ func processProofComponent(index int, component ProofComponent) string {
 	buffer := ""
 
 	for level, auth := range component.authenticator {
-		buffer = buffer + HashTransaction(string(index)+string(level)+component.tr+auth)
+		buffer = buffer + HashTransaction(strconv.Itoa(index)+strconv.Itoa(level)+component.tr+auth)
 	}
+	fmt.Printf("Processed Component: %s \n", HashTransaction(buffer)[0:5])
 	return HashTransaction(buffer)
 }
 
@@ -99,7 +127,9 @@ func computeMembershipProof(node Node, tr string, sl SkipList) ([]ProofComponent
 	var singleHopTraversalLevel int
 
 	for {
-		if index > sl.lists[0].length {
+		if index >= sl.lists[0].length {
+			tempProofComponent = computeProofComponent(tempNode)
+			membershipProof = append(membershipProof, tempProofComponent)
 			return membershipProof, nil
 		}
 		tempProofComponent = computeProofComponent(tempNode)
@@ -114,17 +144,30 @@ func computeMembershipProof(node Node, tr string, sl SkipList) ([]ProofComponent
 // AASL element in position j.
 func computeProofComponent(node Node) ProofComponent {
 
-	proofComponent := &ProofComponent{
-		tr:            node.tr,
-		authenticator: []string{node.prev.auth},
+	if node.prev == nil {
+		proofComponent := &ProofComponent{
+			tr:            node.tr,
+			authenticator: []string{""},
+		}
+		return *proofComponent
 	}
-	tempNode := node.up
+
+	proofComponent := &ProofComponent{
+		tr: node.tr,
+		//authenticator: []string{node.prev.auth},
+	}
+	tempNode := node
 	for {
+		proofComponent.authenticator = append(proofComponent.authenticator, dropToBaseElement(*tempNode.prev).auth)
 		if tempNode.up == nil {
+			// fmt.Printf("For Node %s --> ", node.tr)
+			// for _, el := range proofComponent.authenticator {
+			// 	fmt.Printf("%s | ", el[0:5])
+			// }
+			// fmt.Println()
 			return *proofComponent
 		}
-		proofComponent.authenticator = append(proofComponent.authenticator, dropToBaseElement(*tempNode.prev).auth)
-		tempNode = tempNode.up
+		tempNode = *tempNode.up
 	}
 }
 
@@ -141,11 +184,11 @@ func dropToBaseElement(node Node) Node {
 }
 
 func singleHopTraversal(startNode Node, level int) Node {
-	tempNode := startNode
-	for i := 0; i <= level; i++ {
+	tempNode := dropToBaseElement(startNode)
+	for i := 0; i < level; i++ {
 		tempNode = *tempNode.up
 	}
-	return *tempNode.next
+	return dropToBaseElement(*tempNode.next)
 }
 
 // SingleHopTraversalLevel returns the highest linked list level l that must be followed in the Skip List
@@ -193,7 +236,6 @@ func buildSkipList(data []string) (*SkipList, error) {
 		length: 0,
 	}
 	list.head.next = list.tail
-	list.tail.prev = list.head
 
 	sl := &SkipList{
 		lists:  []List{*list},
@@ -288,65 +330,32 @@ func insert(list List, tr string, index int) *List {
 
 func Lookup(sl SkipList, tr string) (int, *Node, bool) {
 
-	// fmt.Print("\n")
-	// fmt.Printf("Searching Transaction ---> %s\n", tr)
-
-	currentLevel := sl.levels - 1
-	nextNode := sl.lists[currentLevel].head
-	currentNode := nextNode
-	if nextNode == nil {
-		return -1, nil, false
-	}
-
-	// Find list to start from
+	currentNode := sl.lists[sl.levels].head
 	for {
-		if tr >= nextNode.tr {
-			currentNode = nextNode
-			nextNode = currentNode.next
-			// fmt.Printf("Starts on Level %d with CurrentNode: %s\n\n", currentLevel, currentNode.tr)
-			break
-		} else {
-			currentLevel = currentLevel - 1
-			if currentLevel < 0 {
-				return -1, nil, false
-			}
-			nextNode = sl.lists[currentLevel].head
-		}
-	}
-
-	for {
-		//Check existence of current nodes
-		for {
-			if nextNode == nil {
-				// fmt.Print("LOOP -> ")
-				// fmt.Printf("NextNode is Null, CurrentNode is: %s\n", currentNode.tr)
+		// If the transactions match drop to the baselevel and return the node
+		if currentNode.tr == tr {
+			for {
 				if currentNode.down == nil {
-					if currentNode.tr == tr {
-						return currentNode.index, currentNode, true
-					}
+					return currentNode.index, currentNode, true
+				}
+				currentNode = currentNode.down
+			}
+		}
+		for {
+			if currentNode.next != nil {
+				if tr >= currentNode.next.tr {
+					currentNode = currentNode.next
+					break
+				}
+				if currentNode.down == nil {
 					return -1, nil, false
 				}
 				currentNode = currentNode.down
-				nextNode = currentNode.next
 			} else {
-				//fmt.Printf("CurrentNode is: %s\n", currentNode.tr)
-				break
-			}
-		}
-
-		if tr == currentNode.tr {
-			return currentNode.index, currentNode, true
-		}
-		if tr >= nextNode.tr {
-			currentNode = nextNode
-			nextNode = currentNode.next
-		} else {
-			if currentNode.down != nil {
+				if currentNode.down == nil {
+					return -1, nil, false
+				}
 				currentNode = currentNode.down
-				nextNode = currentNode.next
-			} else {
-				currentNode = nextNode
-				nextNode = currentNode.next
 			}
 		}
 	}
@@ -403,8 +412,11 @@ func PrintList(sl SkipList) {
 			fmt.Printf("-> %s ", currentNode.tr)
 			currentNode = currentNode.next
 		}
-		fmt.Print("\n")
+		print("\n")
 	}
+	print("\n")
+	LevelTester(sl)
+	print("\n")
 }
 
 func PrintListAuthenticators(sl SkipList) {
@@ -435,6 +447,31 @@ func PrintSkipListHeadsAndTails(sl SkipList) {
 		fmt.Printf("List %d --> HEAD: %s , TAIL: %s\n", j, list.head.tr, list.tail.tr)
 	}
 	fmt.Print("\n")
+}
+
+// Prints the number of levels of each element in a Skip List
+func LevelTester(sl SkipList) {
+
+	list := sl.lists[0]
+	baseNode := list.head
+	tempNode := baseNode
+	levelCounter := 1
+	fmt.Print("Levels:  -> ")
+	for {
+		if tempNode.up == nil {
+			if baseNode.next == nil {
+				fmt.Printf("%d\n", levelCounter)
+				return
+			}
+			fmt.Printf("%d -> ", levelCounter)
+			baseNode = baseNode.next
+			tempNode = baseNode
+			levelCounter = 1
+			continue
+		}
+		tempNode = tempNode.up
+		levelCounter++
+	}
 }
 
 /* 	Commutative Hashing Funtion as suggested in:
