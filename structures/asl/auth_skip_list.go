@@ -86,7 +86,7 @@ func computeMembershipProof(node Node, tr string, sl SkipList) ([]ProofComponent
 		singleHopTraversalLevel = SingleHopTraversalLevel(index, sl.lists[0].length-1)
 		tempNode = singleHopTraversal(tempNode, singleHopTraversalLevel)
 		index = index + int(math.Pow(2.0, float64(singleHopTraversalLevel)))
-	}git
+	}
 }
 
 // computeProofComponent takes a node and returns a proof component C for the
