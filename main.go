@@ -46,6 +46,11 @@ func main() {
 	}
 	fmt.Printf("%d needs level %d to reach %d\n", 3, asl.SingleHopTraversalLevel(3, 7), 7)
 
+	for _, el := range test {
+		result, _ := asl.VerifyTransaction(*sl, el)
+		fmt.Printf("Element '%s' is: '%t' ", el, result)
+	}
+
 	return
 
 	// get absolute path of current folder

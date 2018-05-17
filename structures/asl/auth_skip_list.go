@@ -34,7 +34,7 @@ type SkipList struct {
 
 type ProofComponent struct {
 	tr            string
-	authenticator string
+	authenticator []string
 }
 
 // Example SL with transactions "a"-"j"
@@ -57,16 +57,37 @@ func NewSkipList(data []string) (*SkipList, error) {
 // i = pos(tr)
 // n = SkipList.auth
 // d = tr
-func VerifyTransaction(sl SkipList, tr string) (string, []string, bool, error) {
+func VerifyTransaction(sl SkipList, tr string) (bool, error) {
 
 	_, nodePointer, exists := Lookup(sl, tr)
 	if !exists {
-		return "", nil, false, errors.New("error: not part of skip list")
+		return false, errors.New("error: not part of skip list")
 	}
-	computeMembershipProof(*nodePointer, tr, sl)
+	proof, err := computeMembershipProof(*nodePointer, tr, sl)
+
+	if err != nil {
+		return false, err
+	}
+
+	verifactionResult := verifyMembershipProof(*nodePointer, sl, proof)
 
 	// Incomplete
-	return "", nil, false, nil
+	return verifactionResult, err
+}
+
+func verifyMembershipProof(node Node, sl SkipList, proof []ProofComponent) bool {
+
+	return false
+}
+
+// Processes a single Proof Component --> Calculates Ti
+func processProofComponent(index int, component ProofComponent) string {
+	buffer := ""
+
+	for level, auth := range component.authenticator {
+		buffer = buffer + HashTransaction(string(index)+string(level)+component.tr+auth)
+	}
+	return HashTransaction(buffer)
 }
 
 // computeMembershipProof compoutes the membership for a node given a skip list
@@ -95,15 +116,15 @@ func computeProofComponent(node Node) ProofComponent {
 
 	proofComponent := &ProofComponent{
 		tr:            node.tr,
-		authenticator: "",
+		authenticator: []string{node.prev.auth},
 	}
-	tempNode := node
+	tempNode := node.up
 	for {
 		if tempNode.up == nil {
 			return *proofComponent
 		}
-		proofComponent.authenticator = proofComponent.authenticator + dropToBaseElement(*tempNode.prev).auth
-		tempNode = *tempNode.up
+		proofComponent.authenticator = append(proofComponent.authenticator, dropToBaseElement(*tempNode.prev).auth)
+		tempNode = tempNode.up
 	}
 }
 
