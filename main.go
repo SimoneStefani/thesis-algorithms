@@ -16,29 +16,29 @@ import (
 
 func main() {
 
-	test := []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j"}
+	test := []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o"}
 	sl, _ := asl.NewSkipList(test)
-	asl.PrintList(*sl)
+	asl.PrintListAuthenticators(*sl)
 	fmt.Print("\n")
 
-	// //Print Examples for Searching the Skip List
-	// fmt.Print("Testing: First should be false, rest should give position\n")
-	// testFor := "k"
-	// pos, _, exists := asl.Lookup(*sl, testFor)
-	// if exists {
-	// 	fmt.Printf("%s at pos: %d\n", "10", pos)
-	// } else {
-	// 	fmt.Printf("%s is %t\n", testFor, exists)
-	// }
+	//Print Examples for Searching the Skip List
+	fmt.Print("Testing: First should be false, rest should give position\n")
+	testFor := "kwqgfqlwvfl"
+	pos, _, exists := asl.Lookup(*sl, testFor)
+	if exists {
+		fmt.Printf("%s at pos: %d\n", "10", pos)
+	} else {
+		fmt.Printf("%s is %t\n", testFor, exists)
+	}
 
-	// for _, el := range test {
-	// 	pos, _, exists = asl.Lookup(*sl, el)
-	// 	if exists {
-	// 		fmt.Printf("%s at pos: %d\n", el, pos)
-	// 	} else {
-	// 		fmt.Printf("%s is %t\n", el, pos)
-	// 	}
-	// }
+	for _, el := range test {
+		pos, _, exists = asl.Lookup(*sl, el)
+		if exists {
+			fmt.Printf("%s at pos: %d\n", el, pos)
+		} else {
+			fmt.Printf("%s is %t\n", el, pos)
+		}
+	}
 
 	fmt.Print("\nChecking SingleHopTraversel Function:\n")
 	for i := 0; i < 11; i++ {

@@ -69,32 +69,62 @@ func VerifyTransaction(sl SkipList, tr string) (string, []string, bool, error) {
 	return "", nil, false, nil
 }
 
-// Incomplete
+// computeMembershipProof compoutes the membership for a node given a skip list
 func computeMembershipProof(node Node, tr string, sl SkipList) ([]ProofComponent, error) {
 	var membershipProof []ProofComponent
-	//lastIndex := sl.lists[0].length - 1
-	tempNode := node
-	//indexOfNext := tempNode.index
+	var tempProofComponent ProofComponent
+	var tempNode = node
+	index := node.index
+	var singleHopTraversalLevel int
+
 	for {
-		membershipProof = append(membershipProof, computeProofComponent(tempNode))
-	}
+		if index > sl.lists[0].length {
+			return membershipProof, nil
+		}
+		tempProofComponent = computeProofComponent(tempNode)
+		membershipProof = append(membershipProof, tempProofComponent)
+		singleHopTraversalLevel = SingleHopTraversalLevel(index, sl.lists[0].length-1)
+		tempNode = singleHopTraversal(tempNode, singleHopTraversalLevel)
+		index = index + int(math.Pow(2.0, float64(singleHopTraversalLevel)))
+	}git
 }
 
-// Incomplete
+// computeProofComponent takes a node and returns a proof component C for the
+// AASL element in position j.
 func computeProofComponent(node Node) ProofComponent {
 
 	proofComponent := &ProofComponent{
 		tr:            node.tr,
-		authenticator: node.auth,
+		authenticator: "",
 	}
 	tempNode := node
 	for {
 		if tempNode.up == nil {
 			return *proofComponent
 		}
-		proofComponent.authenticator = proofComponent.authenticator + tempNode.up.auth
+		proofComponent.authenticator = proofComponent.authenticator + dropToBaseElement(*tempNode.prev).auth
 		tempNode = *tempNode.up
 	}
+}
+
+// dropToBaseElement taks a node at a certain List level and returns its corresponding
+// equal in the base list
+func dropToBaseElement(node Node) Node {
+	tempNode := node
+	for {
+		if tempNode.down == nil {
+			return tempNode
+		}
+		tempNode = *tempNode.down
+	}
+}
+
+func singleHopTraversal(startNode Node, level int) Node {
+	tempNode := startNode
+	for i := 0; i <= level; i++ {
+		tempNode = *tempNode.up
+	}
+	return *tempNode.next
 }
 
 // SingleHopTraversalLevel returns the highest linked list level l that must be followed in the Skip List
