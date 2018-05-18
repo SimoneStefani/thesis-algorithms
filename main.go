@@ -21,39 +21,36 @@ func main() {
 	asl.PrintListAuthenticators(*sl)
 	fmt.Print("\n")
 
-	// //Print Examples for Searching the Skip List
-	// fmt.Print("Testing: First should be false, rest should give position\n")
-	// testFor := "kwqgfqlwvfl"
-	// pos, _, exists := asl.Lookup(*sl, testFor)
-	// if exists {
-	// 	fmt.Printf("%s at pos: %d\n", "10", pos)
-	// } else {
-	// 	fmt.Printf("%s is %t\n", testFor, exists)
-	// }
+	//Print Examples for Searching the Skip List
+	fmt.Print("Testing: First should be false, rest should give position\n")
+	testFor := "kwqgfqlwvfl"
+	pos, _, exists := asl.Lookup(*sl, testFor)
+	if exists {
+		fmt.Printf("%s at pos: %d\n", "10", pos)
+	} else {
+		fmt.Printf("%s is %t\n", testFor, exists)
+	}
 
-	// for _, el := range test {
-	// 	pos, _, exists := asl.Lookup(*sl, el)
-	// 	if exists {
-	// 		fmt.Printf("%s at pos: %d\n", el, pos)
-	// 	} else {
-	// 		fmt.Printf("%s is %t\n", el, pos)
-	// 	}
-	// }
+	fmt.Print("\nTesting: Lookup function\n")
+	for _, el := range test {
+		pos, _, exists := asl.Lookup(*sl, el)
+		if exists {
+			fmt.Printf("%s at pos: %d\n", el, pos)
+		} else {
+			fmt.Printf("%s is %t\n", el, pos)
+		}
+	}
 
-	// fmt.Print("\nChecking SingleHopTraversel Function:\n")
-	// for i := 0; i < 15; i++ {
-	// 	fmt.Printf("%d needs level %d to reach %d\n", i, asl.SingleHopTraversalLevel(i, 14), 14)
-	// }
+	fmt.Print("\nChecking SingleHopTraversel Function:\n")
+	for i := 0; i < 15; i++ {
+		fmt.Printf("%d needs level %d to reach %d\n", i, asl.SingleHopTraversalLevel(i, 14), 14)
+	}
 
-	asl.VerifyTransaction(*sl, test[1])
-
-	// for _, el := range test {
-	// 	if el == "a" {
-	// 		continue
-	// 	}
-	// 	result, _ := asl.VerifyTransaction(*sl, el)
-	// 	fmt.Printf("Element '%s' is: '%t' ", el, result)
-	// }
+	fmt.Print("\nChecking Verification Function:\n")
+	for _, el := range test {
+		result, _ := asl.VerifyTransaction(*sl, el)
+		fmt.Printf("Element '%s' is in = '%t' \n", el, result)
+	}
 
 	return
 

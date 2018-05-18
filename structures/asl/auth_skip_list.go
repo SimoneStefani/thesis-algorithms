@@ -93,8 +93,6 @@ func verifyMembershipProof(node Node, sl SkipList, proof []ProofComponent) bool 
 			break
 		}
 		currentAuth = processProofComponent(index, proof[i])
-		fmt.Printf("%s\n", currentAuth[0:5])
-		fmt.Printf("%s\n", prevAuth[0:5])
 		if proof[i].authenticator[level] != prevAuth {
 			return false
 		}
@@ -110,11 +108,20 @@ func verifyMembershipProof(node Node, sl SkipList, proof []ProofComponent) bool 
 // Processes a single Proof Component --> Calculates Ti
 func processProofComponent(index int, component ProofComponent) string {
 	buffer := ""
+	// The first element is a special case, see paper for more info
+	if index == 0 {
+		return component.authenticator[0]
+	}
+	// fmt.Printf("For Node %s --> ", component.tr)
+	// fmt.Printf("Datum: %s | ", component.tr)
+	// for _, el := range component.authenticator {
+	// 	fmt.Printf("%s | ", el[0:5])
+	// }
+	// fmt.Println()
 
 	for level, auth := range component.authenticator {
 		buffer = buffer + HashTransaction(strconv.Itoa(index)+strconv.Itoa(level)+component.tr+auth)
 	}
-	fmt.Printf("Processed Component: %s \n", HashTransaction(buffer)[0:5])
 	return HashTransaction(buffer)
 }
 
@@ -147,8 +154,12 @@ func computeProofComponent(node Node) ProofComponent {
 	if node.prev == nil {
 		proofComponent := &ProofComponent{
 			tr:            node.tr,
-			authenticator: []string{""},
+			authenticator: []string{node.auth},
 		}
+		// fmt.Printf("For Node %s --> ", node.tr)
+		// fmt.Printf("Datum: %s | ", proofComponent.tr)
+		// fmt.Printf("%s | ", proofComponent.authenticator[0][0:5])
+		// fmt.Println()
 		return *proofComponent
 	}
 
@@ -161,6 +172,7 @@ func computeProofComponent(node Node) ProofComponent {
 		proofComponent.authenticator = append(proofComponent.authenticator, dropToBaseElement(*tempNode.prev).auth)
 		if tempNode.up == nil {
 			// fmt.Printf("For Node %s --> ", node.tr)
+			// fmt.Printf("Datum: %s | ", proofComponent.tr)
 			// for _, el := range proofComponent.authenticator {
 			// 	fmt.Printf("%s | ", el[0:5])
 			// }
@@ -287,7 +299,7 @@ func appendToSkipList(sl SkipList, tr string) *SkipList {
 		sl.lists[nextLevel] = *insert(sl.lists[nextLevel], tr, currentIndex)
 		sl.lists[nextLevel].tail.down = sl.lists[nextLevel-1].tail
 		sl.lists[nextLevel-1].tail.up = sl.lists[nextLevel].tail
-		authBuffer = authBuffer + sl.lists[nextLevel-1].tail.auth
+		authBuffer = authBuffer + sl.lists[nextLevel].tail.auth
 		nextLevel = nextLevel + 1
 	}
 
@@ -473,20 +485,3 @@ func LevelTester(sl SkipList) {
 		levelCounter++
 	}
 }
-
-/* 	Commutative Hashing Funtion as suggested in:
-*		Goodrich, M. T., & Tamassia, R. (2000).
-*		Efficient authenticated dictionaries with skip lists and commutative hashing.
-*		Technical Report, Johns Hopkins Information Security Institute.
-*  A commutative hash function 'h(x,y)' can be constructed with a cryptographic hash funtion 'f()'
-* in the following why: h(x,y) = f(min{x,y}, max{x,y})
- */
-
-// func CommutativeHash(x Node, y Node) (string, error) {
-// 	if x.rank == y.rank {
-// 		return "", errors.New("Error: Two nodes with equal rank.")
-// 	} else if x.rank <= y.rank {
-// 		return HashTransaction(x.tr + y.tr), nil
-// 	}
-// 	return HashTransaction(y.tr + x.tr), nil
-// }
