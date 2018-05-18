@@ -16,43 +16,46 @@ import (
 
 func main() {
 
-	test := []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o"}
-	sl, _ := asl.NewSkipList(test)
-	asl.PrintListAuthenticators(*sl)
-	fmt.Print("\n")
+	//
+	//	FOR Visual Testing Only uncomment if desired :-)
+	//
+	// test := []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o"}
+	// sl, _ := asl.NewSkipList(test)
+	// asl.PrintListAuthenticators(*sl)
+	// fmt.Print("\n")
 
-	//Print Examples for Searching the Skip List
-	fmt.Print("Testing: First should be false, rest should give position\n")
-	testFor := "kwqgfqlwvfl"
-	pos, _, exists := asl.Lookup(*sl, testFor)
-	if exists {
-		fmt.Printf("%s at pos: %d\n", "10", pos)
-	} else {
-		fmt.Printf("%s is %t\n", testFor, exists)
-	}
+	// //Print Examples for Searching the Skip List
+	// fmt.Print("Testing: First should be false, rest should give position\n")
+	// testFor := "kwqgfqlwvfl"
+	// pos, _, exists := asl.Lookup(*sl, testFor)
+	// if exists {
+	// 	fmt.Printf("%s at pos: %d\n", "10", pos)
+	// } else {
+	// 	fmt.Printf("%s is %t\n", testFor, exists)
+	// }
 
-	fmt.Print("\nTesting: Lookup function\n")
-	for _, el := range test {
-		pos, _, exists := asl.Lookup(*sl, el)
-		if exists {
-			fmt.Printf("%s at pos: %d\n", el, pos)
-		} else {
-			fmt.Printf("%s is %t\n", el, pos)
-		}
-	}
+	// fmt.Print("\nTesting: Lookup function\n")
+	// for _, el := range test {
+	// 	pos, _, exists := asl.Lookup(*sl, el)
+	// 	if exists {
+	// 		fmt.Printf("%s at pos: %d\n", el, pos)
+	// 	} else {
+	// 		fmt.Printf("%s is %t\n", el, pos)
+	// 	}
+	// }
 
-	fmt.Print("\nChecking SingleHopTraversel Function:\n")
-	for i := 0; i < 15; i++ {
-		fmt.Printf("%d needs level %d to reach %d\n", i, asl.SingleHopTraversalLevel(i, 14), 14)
-	}
+	// fmt.Print("\nChecking SingleHopTraversel Function:\n")
+	// for i := 0; i < 15; i++ {
+	// 	fmt.Printf("%d needs level %d to reach %d\n", i, asl.SingleHopTraversalLevel(i, 14), 14)
+	// }
 
-	fmt.Print("\nChecking Verification Function:\n")
-	for _, el := range test {
-		result, _ := asl.VerifyTransaction(*sl, el)
-		fmt.Printf("Element '%s' is in = '%t' \n", el, result)
-	}
+	// fmt.Print("\nChecking Verification Function:\n")
+	// for _, el := range test {
+	// 	result, _ := asl.VerifyTransaction(*sl, el)
+	// 	fmt.Printf("Element '%s' is in = '%t' \n", el, result)
+	// }
 
-	return
+	// return
 
 	// get absolute path of current folder
 	basePath := GetPath()
@@ -175,7 +178,15 @@ func runVerificationExperiment(data []string, algo *string, iter int) ([]int64, 
 			b = GetMemUsage()
 			fastmt.CheckPath(data[averageTimePosition], root, path)
 		} else if *algo == "sl" {
-			return nil, nil
+			sl, _ := asl.NewSkipList(data)
+			start = time.Now()
+			asl.VerifyTransaction(*sl, data[averageTimePosition])
+			t = time.Now()
+
+			runtime.GC()
+			debug.SetGCPercent(-1)
+			b = GetMemUsage()
+			//fastmt.CheckPath(data[averageTimePosition], root, path)
 		}
 
 		a := GetMemUsage()
