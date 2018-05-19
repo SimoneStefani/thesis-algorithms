@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/SimoneStefani/thesis-algorithms/structures/asl"
 	"github.com/SimoneStefani/thesis-algorithms/structures/fastmt"
 	"github.com/SimoneStefani/thesis-algorithms/structures/hashlist"
 	"github.com/SimoneStefani/thesis-algorithms/structures/mt"
@@ -14,6 +15,47 @@ import (
 )
 
 func main() {
+
+	//
+	//	FOR Visual Testing Only uncomment if desired :-)
+	//
+	// test := []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o"}
+	// sl, _ := asl.NewSkipList(test)
+	// asl.PrintListAuthenticators(*sl)
+	// fmt.Print("\n")
+
+	// //Print Examples for Searching the Skip List
+	// fmt.Print("Testing: First should be false, rest should give position\n")
+	// testFor := "kwqgfqlwvfl"
+	// pos, _, exists := asl.Lookup(*sl, testFor)
+	// if exists {
+	// 	fmt.Printf("%s at pos: %d\n", "10", pos)
+	// } else {
+	// 	fmt.Printf("%s is %t\n", testFor, exists)
+	// }
+
+	// fmt.Print("\nTesting: Lookup function\n")
+	// for _, el := range test {
+	// 	pos, _, exists := asl.Lookup(*sl, el)
+	// 	if exists {
+	// 		fmt.Printf("%s at pos: %d\n", el, pos)
+	// 	} else {
+	// 		fmt.Printf("%s is %t\n", el, pos)
+	// 	}
+	// }
+
+	// fmt.Print("\nChecking SingleHopTraversel Function:\n")
+	// for i := 0; i < 15; i++ {
+	// 	fmt.Printf("%d needs level %d to reach %d\n", i, asl.SingleHopTraversalLevel(i, 14), 14)
+	// }
+
+	// fmt.Print("\nChecking Verification Function:\n")
+	// for _, el := range test {
+	// 	result, _ := asl.VerifyTransaction(*sl, el)
+	// 	fmt.Printf("Element '%s' is in = '%t' \n", el, result)
+	// }
+
+	// return
 
 	// get absolute path of current folder
 	basePath := GetPath()
@@ -82,6 +124,10 @@ func runBuildExperiment(data []string, algo *string, iter int) ([]int64, []int64
 			start = time.Now()
 			fastmt.NewFastMerkleTree(data)
 			t = time.Now()
+		} else if *algo == "sl" {
+			start = time.Now()
+			asl.NewSkipList(data)
+			t = time.Now()
 		}
 
 		a := GetMemUsage()
@@ -131,6 +177,16 @@ func runVerificationExperiment(data []string, algo *string, iter int) ([]int64, 
 			debug.SetGCPercent(-1)
 			b = GetMemUsage()
 			fastmt.CheckPath(data[averageTimePosition], root, path)
+		} else if *algo == "sl" {
+			sl, _ := asl.NewSkipList(data)
+			start = time.Now()
+			//answer, proof, nodePointer, _ := asl.VerifyTransaction(*sl, data[averageTimePosition])
+			asl.VerifyTransaction(*sl, data[averageTimePosition]) //Swap with the above if input is sorted
+			t = time.Now()
+			runtime.GC()
+			debug.SetGCPercent(-1)
+			b = GetMemUsage()
+			//asl.VerifyMembershipProof(*nodePointer, *sl, proof)
 		}
 
 		a := GetMemUsage()
