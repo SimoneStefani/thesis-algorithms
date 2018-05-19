@@ -2,6 +2,7 @@ package fastmt
 
 import (
 	"errors"
+	"math"
 
 	. "github.com/SimoneStefani/thesis-algorithms/structures/common"
 )
@@ -68,6 +69,19 @@ func CheckPath(tr string, roothash string, path []VerificationNode) bool {
 	}
 
 	return hash == roothash
+}
+
+func (root *Node) Depth() int {
+	if root == nil {
+		return 0
+	}
+
+	leftDepth := root.Left.Depth()
+	rightDepth := root.Right.Depth()
+
+	bigger := int(math.Max(float64(leftDepth), float64(rightDepth)))
+
+	return bigger + 1
 }
 
 func computeMerklePath(pos int, tree *FastMerkleTree) []VerificationNode {
