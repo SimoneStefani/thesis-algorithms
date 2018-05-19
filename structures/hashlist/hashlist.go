@@ -61,6 +61,24 @@ func CheckPath(tr string, headHash string, path []string) bool {
 	return hash == headHash
 }
 
+func (hl *HashList) Length() int {
+	if hl.list.head == hl.list.tail {
+		return 1
+	}
+
+	count := 0
+	current := hl.list.head
+	for {
+		count = count + 1
+		if current.next == nil {
+			break
+		}
+		current = current.next
+	}
+
+	return count
+}
+
 func computePath(pos int, list []string) ([]string, *HashList) {
 
 	var path []string
