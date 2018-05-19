@@ -57,22 +57,22 @@ func NewSkipList(data []string) (*SkipList, error) {
 // i = pos(tr)
 // n = SkipList.auth
 // d = tr
-func VerifyTransaction(sl SkipList, tr string) (bool, error) {
+func VerifyTransaction(sl SkipList, tr string) (bool, []ProofComponent, *Node, error) {
 
 	_, nodePointer, exists := Lookup(sl, tr)
 	if !exists {
-		return false, errors.New("error: not part of skip list")
+		return false, nil, nil, errors.New("error: not part of skip list")
 	}
 	proof, err := computeMembershipProof(*nodePointer, tr, sl)
 
 	if err != nil {
-		return false, err
+		return false, nil, nil, err
 	}
 
-	verifactionResult := verifyMembershipProof(*nodePointer, sl, proof)
+	verifactionResult := VerifyMembershipProof(*nodePointer, sl, proof)
 
 	// Incomplete
-	return verifactionResult, err
+	return verifactionResult, proof, nodePointer, err
 }
 
 // ProcessMembershipProof (i,n,d,T,E) return true or false.
@@ -80,7 +80,7 @@ func VerifyTransaction(sl SkipList, tr string) (bool, error) {
 // In this function 'node' holdes the 'index', and 'datum'
 // 'sl' holds the authenticator T which alwas is the digest of the Skip List
 // 'proof' holds the E
-func verifyMembershipProof(node Node, sl SkipList, proof []ProofComponent) bool {
+func VerifyMembershipProof(node Node, sl SkipList, proof []ProofComponent) bool {
 
 	currentAuth := processProofComponent(node.index, proof[0])
 	prevAuth := currentAuth

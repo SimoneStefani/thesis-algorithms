@@ -180,13 +180,12 @@ func runVerificationExperiment(data []string, algo *string, iter int) ([]int64, 
 		} else if *algo == "sl" {
 			sl, _ := asl.NewSkipList(data)
 			start = time.Now()
-			asl.VerifyTransaction(*sl, data[averageTimePosition])
+			answer, proof, nodePointer, _ := asl.VerifyTransaction(*sl, data[averageTimePosition])
 			t = time.Now()
-
 			runtime.GC()
 			debug.SetGCPercent(-1)
 			b = GetMemUsage()
-			//fastmt.CheckPath(data[averageTimePosition], root, path)
+			asl.VerifyMembershipProof(*nodePointer, *sl, proof)
 		}
 
 		a := GetMemUsage()
