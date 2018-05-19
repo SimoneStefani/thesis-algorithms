@@ -180,12 +180,13 @@ func runVerificationExperiment(data []string, algo *string, iter int) ([]int64, 
 		} else if *algo == "sl" {
 			sl, _ := asl.NewSkipList(data)
 			start = time.Now()
-			answer, proof, nodePointer, _ := asl.VerifyTransaction(*sl, data[averageTimePosition])
+			//answer, proof, nodePointer, _ := asl.VerifyTransaction(*sl, data[averageTimePosition])
+			asl.VerifyTransaction(*sl, data[averageTimePosition]) //Swap with the above if input is sorted
 			t = time.Now()
 			runtime.GC()
 			debug.SetGCPercent(-1)
 			b = GetMemUsage()
-			asl.VerifyMembershipProof(*nodePointer, *sl, proof)
+			//asl.VerifyMembershipProof(*nodePointer, *sl, proof)
 		}
 
 		a := GetMemUsage()
