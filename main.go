@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"runtime"
 	"runtime/debug"
+	"sort"
 	"strconv"
 	"time"
 
@@ -125,6 +126,7 @@ func runBuildExperiment(data []string, algo *string, iter int) ([]int64, []int64
 			fastmt.NewFastMerkleTree(data)
 			t = time.Now()
 		} else if *algo == "sl" {
+			sort.Strings(data)
 			start = time.Now()
 			asl.NewSkipList(data)
 			t = time.Now()
@@ -178,6 +180,7 @@ func runVerificationExperiment(data []string, algo *string, iter int) ([]int64, 
 			b = GetMemUsage()
 			fastmt.CheckPath(data[averageTimePosition], root, path)
 		} else if *algo == "sl" {
+			sort.Strings(data)
 			sl, _ := asl.NewSkipList(data)
 			start = time.Now()
 			//answer, proof, nodePointer, _ := asl.VerifyTransaction(*sl, data[averageTimePosition])
