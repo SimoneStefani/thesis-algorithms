@@ -20,12 +20,11 @@ Then run the experiment. The program expects the following arguments:
 * `-algo` the algorithm to run
   * `hl` = Hash List
   * `mt` = Merkle Tree
-  * (`fmt` = Fast Merkle Tree)
-  * (`bf` = Bloom Filter)
+  * `fmt` = Fast Merkle Tree
+  * `sl` = Authenticated Append-only Skip List (AASL)
 
 * `-op` = the operation to perform
-  * `build` = building the data structure
-  * (`verify` = verifying a transaction)
+  * `build` = building the data structure and verifying a transaction
 
 * `-name` =  the name of to the data source file
   * example: uniform_samples_100.txt
