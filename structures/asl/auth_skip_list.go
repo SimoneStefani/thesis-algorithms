@@ -105,6 +105,16 @@ func VerifyMembershipProof(node Node, sl SkipList, proof []ProofComponent) bool 
 	return true
 }
 
+func (sls *SkipList) Lengths() []int {
+	lengths := []int{}
+
+	for _, ls := range sls.lists {
+		lengths = append(lengths, ls.length+1)
+	}
+
+	return lengths
+}
+
 // Processes a single Proof Component --> Calculates Ti
 func processProofComponent(index int, component ProofComponent) string {
 	buffer := ""
