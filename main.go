@@ -63,6 +63,12 @@ func main() {
 
 	// parse the command line arguments
 	algo, op, fileName, iter := ParseCommand()
+	if *algo == "time" {
+		fmt.Printf("Running time experiment...\n\n")
+		result := formatNullResults(evaluateVoid())
+		WriteData(basePath+"/results/time.txt", result)
+		return
+	}
 	fmt.Printf("Running experiment with algo=%s and op=%s from %s...\n\n", *algo, *op, *fileName)
 
 	// load data from specific file
@@ -91,6 +97,39 @@ func formatResults(build_t []int64, build_m []int64, veri_t []int64, veri_m []in
 		}
 	}
 	return results
+}
+
+func formatNullResults(timeTrials []int64) string {
+	results := ""
+	for i := 0; i < len(timeTrials); i++ {
+		if i+1 == len(timeTrials) {
+			results = results + strconv.FormatInt(timeTrials[i], 10)
+		} else {
+			results = results + strconv.FormatInt(timeTrials[i], 10) + "\n"
+		}
+	}
+	return results
+}
+
+func evaluateVoid() []int64 {
+
+	var start time.Time
+	var t time.Time
+	var timeTrials []int64
+	for i := 0; i < 1000000; i++ {
+		counter := 1
+		for {
+			start = time.Now()
+			if counter == 0 {
+				t = time.Now()
+				break
+			}
+			counter--
+		}
+		timeTrials = append(timeTrials, t.Sub(start).Nanoseconds())
+	}
+
+	return timeTrials
 }
 
 func runExperiment(data []string, algo *string, iter int) ([]int64, []int64, []int64, []int64) {

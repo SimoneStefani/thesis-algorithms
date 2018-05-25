@@ -12,10 +12,10 @@ import (
 type Node struct {
 	prev  *Node
 	next  *Node
-	tr    string
-	auth  string
 	down  *Node
 	up    *Node
+	tr    string
+	auth  string
 	index int
 }
 
