@@ -63,6 +63,12 @@ func main() {
 
 	// parse the command line arguments
 	algo, op, fileName, iter := ParseCommand()
+	if *algo == "time" {
+		fmt.Printf("Running time experiment...\n\n")
+		result := formatNullResults(evaluateVoid())
+		WriteData(basePath+"/results/time.txt", result)
+		return
+	}
 	fmt.Printf("Running experiment with algo=%s and op=%s from %s...\n\n", *algo, *op, *fileName)
 
 	// load data from specific file
@@ -70,11 +76,6 @@ func main() {
 	data := LoadData(sourcePath)
 
 	// run experiment
-	if *algo == "time" {
-		result := formatNullResults(evaluateVoid())
-		WriteData(basePath+"/results/time.txt", result)
-		return
-	}
 	buildTimeResults, buildMemResults, veriTimeResults, veriMemResults := runExperiment(data, algo, *iter)
 
 	// write to file the stringified result.
@@ -104,7 +105,7 @@ func formatNullResults(timeTrials []int64) string {
 		if i+1 == len(timeTrials) {
 			results = results + strconv.FormatInt(timeTrials[i], 10)
 		} else {
-			results = results + results + strconv.FormatInt(timeTrials[i], 10) + "\n"
+			results = results + strconv.FormatInt(timeTrials[i], 10) + "\n"
 		}
 	}
 	return results
@@ -112,11 +113,11 @@ func formatNullResults(timeTrials []int64) string {
 
 func evaluateVoid() []int64 {
 
-	counter := 1
 	var start time.Time
 	var t time.Time
 	var timeTrials []int64
-	for i := 0; i < 100000; i-- {
+	for i := 0; i < 1000000; i++ {
+		counter := 1
 		for {
 			start = time.Now()
 			if counter == 0 {
