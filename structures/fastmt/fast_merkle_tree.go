@@ -42,7 +42,7 @@ func NewFastMerkleTree(data []string) (*FastMerkleTree, error) {
 	return t, nil
 }
 
-func VerifyTransaction(tr string, list []string) (string, []VerificationNode, bool, error) {
+func VerifyTransaction(tr string, list []string, tree *FastMerkleTree) (string, []VerificationNode, bool, error) {
 
 	pos, err := Includes(tr, list)
 
@@ -50,7 +50,6 @@ func VerifyTransaction(tr string, list []string) (string, []VerificationNode, bo
 		return "", nil, false, err
 	}
 
-	tree, err := NewFastMerkleTree(list)
 	path := computeMerklePath(pos, tree)
 
 	return tree.merkleRoot, path, CheckPath(tr, tree.merkleRoot, path), err
