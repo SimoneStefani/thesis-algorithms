@@ -42,15 +42,13 @@ func NewTree(data []string) (*MerkleTree, error) {
 	return t, nil
 }
 
-func VerifyTransaction(tr string, list []string) (string, []VerificationNode, bool, error) {
+func VerifyTransaction(tr string, list []string, tree *MerkleTree) (string, []VerificationNode, bool, error) {
 
 	pos, err := Includes(tr, list)
 
 	if err != nil {
 		return "", nil, false, err
 	}
-
-	tree, err := NewTree(list)
 	path := computeMerklePath(pos, tree)
 
 	return tree.merkleRoot, path, CheckPath(tr, tree.merkleRoot, path), err

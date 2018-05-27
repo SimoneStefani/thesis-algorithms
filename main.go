@@ -192,8 +192,9 @@ func runVerificationExperiment(data []string, algo *string, iter int) ([]int64, 
 		runtime.GC()
 
 		if *algo == "mt" {
+			tree, _ := mt.NewTree(data)
 			start = time.Now()
-			root, path, _, _ := mt.VerifyTransaction(data[averageTimePosition], data)
+			root, path, _, _ := mt.VerifyTransaction(data[averageTimePosition], data, tree)
 			t = time.Now()
 
 			runtime.GC()
@@ -210,8 +211,9 @@ func runVerificationExperiment(data []string, algo *string, iter int) ([]int64, 
 			b = GetMemUsage()
 			hashlist.CheckPath(data[averageTimePosition], root, path)
 		} else if *algo == "fmt" {
+			tree, _ := fastmt.NewFastMerkleTree(data)
 			start = time.Now()
-			root, path, _, _ := fastmt.VerifyTransaction(data[averageTimePosition], data)
+			root, path, _, _ := fastmt.VerifyTransaction(data[averageTimePosition], data, tree)
 			t = time.Now()
 
 			runtime.GC()
@@ -232,7 +234,6 @@ func runVerificationExperiment(data []string, algo *string, iter int) ([]int64, 
 		}
 
 		a := GetMemUsage()
-
 		timeTrials = append(timeTrials, t.Sub(start).Nanoseconds())
 		memTrials = append(memTrials, a-b)
 	}

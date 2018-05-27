@@ -33,7 +33,8 @@ func TestBuildUnbalancedMerkleTreeWithSeveralElements(t *testing.T) {
 
 func TestVerifyMerkleTreeValidTransaction(t *testing.T) {
 	data := []string{"A", "B", "C"}
-	_, _, result, _ := VerifyTransaction("B", data)
+	tree, _ := NewTree(data)
+	_, _, result, _ := VerifyTransaction("B", data, tree)
 
 	if !result {
 		t.Error("Expected true, got false")
@@ -42,7 +43,8 @@ func TestVerifyMerkleTreeValidTransaction(t *testing.T) {
 
 func TestVerifyMerkleTreeInvalidTransaction(t *testing.T) {
 	data := []string{"A", "B", "C"}
-	_, _, _, err := VerifyTransaction("Z", data)
+	tree, _ := NewTree(data)
+	_, _, _, err := VerifyTransaction("Z", data, tree)
 
 	if err == nil {
 		t.Error("Invalid verification")
