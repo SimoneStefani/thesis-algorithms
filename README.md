@@ -1,6 +1,5 @@
 #### Royal Institute of Technology KTH - Stockholm
 # Blockchain Algorithms
-[![Build Status](http://139.59.211.227:8080/buildStatus/icon?job=thesis-algo/master)](http://139.59.211.227:8080/job/thesis-algo/master)
 
 _This repository contains code written during the spring semester 2018 by Dean Rauschenbusch and Simone Stefani_
 
